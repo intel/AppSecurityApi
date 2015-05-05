@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"    
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="com.intel.security"
+    version="1.1.0">
+    <name>Intel Security Services plugin</name>
+    <description>Intel Security Services Plugin</description>
+    <license></license>
+    <keywords>Intel,intel.security,intel.security.Services,Security Services</keywords>
+
+    <js-module src="www/services.js" name="Services">
+        <clobbers target="intel.security" />
+    </js-module>
+	
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="IntelSecurity" >
+                <param name="android-package" value="com.intel.security.Services"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/Callbacks.java" target-dir="src/com/intel/security" />
+        <source-file src="src/android/Services.java" target-dir="src/com/intel/security" />
+	<source-file src="src/android/SecureAPIEnum.java" target-dir="src/com/intel/security" />
+        <source-file src="src/android/SecureData.java" target-dir="src/com/intel/security" />
+	<source-file src="src/android/SecureStorage.java" target-dir="src/com/intel/security" />        
+	<source-file src="src/android/ErrorCodeEnum.java" target-dir="src/com/intel/security" />	
+        <source-file src="src/android/ErrorCodeException.java" target-dir="src/com/intel/security" />		
+
+	<source-file src="libs/x86/sr_agent.cpa" target-dir="assets" />	
+        <source-file src="libs/x86/sr_agent.vp" target-dir="assets" />	
+	<source-file src="libs/x86/libSecurityServices.sb" target-dir="assets" />	
+		
+	<source-file src="libs/armeabi" 	target-dir="libs" />
+	<source-file src="libs/armeabi-v7a" target-dir="libs" />
+	<source-file src="libs/x86" 		target-dir="libs" />
+
+    </platform>
+
+    <!-- ios -->
+    <platform name="ios">
+    
+        <!--  Sets the changes that need to be made to config.xml for iOS
+                in the selected parent element. For separate parents, make sure
+                to use separate <config-file> elements with the proper parent.
+                These changes are applied by Icenium during the build process. -->
+    
+        <config-file target="config.xml" parent="/widget/plugins" >
+            <feature name="IntelSecurity">
+                <param name="ios-package" value="sService" />
+            </feature>
+        </config-file>
+    
+    
+        <header-file src="src/ios/sService.h" />
+        <source-file src="src/ios/sService.m" />
+	
+        <header-file src="src/ios/xss_types.h" />
+        <header-file src="src/ios/xss_api.h" />
+        <header-file src="src/ios/xss_error.h" />
+        <header-file src="src/ios/xss_log.h" />
+        <source-file src="src/ios/libsService.a" framework="true" />
+        <source-file src="src/ios/libkeyStore.a" framework="true" />
+        <source-file src="src/ios/libcrypto.a" framework="true" />
+        <framework src="libc++.dylib" />
+        <framework src="libstdc++.dylib" />
+    
+    </platform>
+	
+	<!-- windows8 -->
+    <platform name="windows8">
+        <config-file target="config.xml" parent="/*">
+            <feature name="IntelSecurity" >
+                <param name="wp-package" value="com.intel.security"/>
+            </feature>
+        </config-file>
+		<js-module src="src/windows8/servicesProxy.js" name="SecureProxy">
+			<merges target="" />
+		</js-module>
+		<framework src="src/windows8/libs/x86/IntelSecurityServicesWRC.winmd" custom="true"/>	
+		<config-file target="package.appxmanifest" parent="/Package/Dependencies">
+           <PackageDependency Name="Microsoft.VCLibs.110.00" MinVersion="11.0.0.0" />
+        </config-file>
+	</platform>
+	
+	<!-- windows -->
+    <platform name="windows">
+        <config-file target="config.xml" parent="/widget">
+            <feature name="IntelSecurity" >
+                <param name="windows-package" value="com.intel.security"/>
+            </feature>
+        </config-file>
+		<js-module src="src/windows8/servicesProxy.js" name="SecureProxy">
+			<merges target="" />
+		</js-module>
+		<framework src="src/windows8/libs/x86/IntelSecurityServicesWRC.winmd" custom="true" />
+		<source-file src="src/windows8/libs/x86/IntelSecurityServicesWRC.dll"/>
+		<config-file target="package.windows.appxmanifest" parent="/Package/Dependencies">
+            <PackageDependency Name="Microsoft.VCLibs.120.00" MinVersion="12.0.0.0" />
+        </config-file>
+    </platform>
+	
+</plugin>

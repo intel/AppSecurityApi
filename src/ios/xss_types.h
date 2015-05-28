@@ -22,6 +22,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
+
 /** @file 
 	@brief Main API type declarations.
 */
@@ -35,7 +36,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 #if defined _MSC_VER
 #   define ALIGN(n) __declspec(align(n))
 #else
-#   define ALIGN(n) __attribute__ ((aligned(n)))
+#   define ALIGN(n) __attribute__ ((aligned(n))) __attribute__((packed))
 #endif 
 #define ALIGN1 ALIGN(1)
 
@@ -97,7 +98,7 @@ typedef enum
 typedef  union
 {
 	uint32_t raw;
-    ALIGN1 struct{
+    struct ALIGN1{
         uint32_t is_success			:2;		/**< sservice_error_bits_t signs success or failure, @see sservice_error_bits_t*/
         uint32_t reserved			: 10;   /**< currently not used space */
         uint32_t error_or_warn_code	: 20 ;  /**< error code, @see ss_error_code_t*/
@@ -148,7 +149,7 @@ typedef enum
 typedef union
 {
 	uint32_t raw;
-    ALIGN1 struct{
+    struct ALIGN1 {
         uint16_t no_store	: 1;	/**< noStore flag */
         uint16_t no_read	: 1;    /**< noRead flag */
         uint32_t reserved	: 30;  
@@ -158,7 +159,7 @@ typedef union
 /**
  * The policy declaration: defines which application, in which conditions can access the data
  */
-typedef ALIGN1 struct 
+typedef struct ALIGN1 
 {
 	sservice_application_access_control_type_t	application_policy;		/**< which application*/
 	sservice_locality_type_t				    device_policy;			/**< on which device*/
@@ -195,6 +196,7 @@ typedef enum
 #define MAX_SECURE_TRANSPORT_TIMEOUT (120000)		    //120 seconds
 #define MAX_SECURE_TRANSPORT_CERTIFICATE_SIZE (8192)	//8KB
 #define MAX_SECURE_TRANSPORT_DATA_SIZE (20971520)		//20MB
+#define MAX_SECURE_TRANSPORT_RESPONSE_DATA_SIZE (20971520)//20MB
 #define MAX_SECURE_TRANSPORT_DESCRIPTOR_SIZE (8192)		//8KB
 #define MAX_SECURE_TRANSPORT_SUM_HEADERS_SIZE (8192)	//8KB
 #define AES128_KEY_SIZE             (16)
@@ -220,7 +222,7 @@ typedef enum
  */
 
 //Add file structure
-typedef ALIGN1 struct
+typedef struct ALIGN1 
 {
 	uint64_t headerID;
 	uint64_t headerVersion;
@@ -267,7 +269,7 @@ typedef ALIGN1 struct
 /**
  * Owners
  */
-typedef ALIGN1 struct  
+typedef struct ALIGN1  
 {
 	sservice_persona_id_t owner_id;							/**< Persona ID of owner */
 	char encryption_key[ENCRYPTION_KEY_SIZE] ;				/**< AES encryption key, which used for encryption of data, encrypted by RSA key of current owner*/
@@ -277,7 +279,7 @@ typedef ALIGN1 struct
 /**\struct sealed_data_header_t 
  * \brief it is a header of Sealed Data structure
  */
-typedef ALIGN1 struct 
+typedef struct ALIGN1 
 {
 	uint32_t version ;											/**< version of sealed data header */
 	sservice_size_t total_size ;								/**< size of whole sealed data */
@@ -296,8 +298,6 @@ typedef ALIGN1 struct
 
 
 typedef char utf8char;
-
-#if defined(SECURE_TRANSPORT)
 
 typedef enum
 {
@@ -326,24 +326,8 @@ typedef enum
 	MAX_CONTENT_TYPE=2
 } sservice_secure_transport_content_type_t;
 
-typedef struct{
-	char* path;
-	sservice_secure_transport_data_type_t type;
-	sservice_secure_transport_format_t format;
-	sservice_secure_transport_content_type_t content_type;
-	sservice_data_handle_t handle;
-} sservice_http_descriptor_t;
 
 
-typedef struct{
-	char* value;
-	sservice_http_descriptor_t desc;
-	char* tag;
-	sservice_persona_id_t creator;
-	sservice_persona_id_t* owners;
-	sservice_size_t num_of_owners;
-	sservice_secure_data_policy_t policy;
-} sservice_response_data_t;
 
 typedef enum
 {
@@ -371,8 +355,6 @@ typedef enum
 } sservice_secure_transport_state_t;
 
 typedef uint32_t sservice_secure_transport_timeout_t;
-
-#endif //SECURE_TRANSPORT
 
 typedef enum 
 {

@@ -19,6 +19,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
+
 package com.intel.security;
 
 import android.util.Log;
@@ -50,6 +51,10 @@ public class Callbacks {
         if ( DataID.equals("AndroidID"))
         {
             return  Settings.Secure.getString(mContext.getContentResolver(),Settings.Secure.ANDROID_ID);
+        }
+        if ( DataID.equals("AndroidVersion"))
+        {
+            return Integer.toString(android.os.Build.VERSION.SDK_INT) ;
         }
         return java.util.UUID.randomUUID().toString() ;
     }

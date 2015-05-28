@@ -19,6 +19,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
+
 package com.intel.security;
 
 public enum SecureAPIEnum {
@@ -46,7 +47,6 @@ public enum SecureAPIEnum {
     SECURE_TRANSPORT_SET_METHOD_STRING("SecureTransportSetMethod"),
     SECURE_TRANSPORT_SET_HEADER_VALUE_STRING("SecureTransportSetHeaderValue"),
     SECURE_TRANSPORT_SEND_REQUEST_STRING("SecureTransportSendRequest"),
-    SECURE_TRANSPORT_GET_RECEIVED_SECURE_DATA_ITEM_STRING("SecureTransportGetRecievedSecureDataItem"),
     SECURE_TRANSPORT_DESTROY_STRING("SecureTransportDestroy");
     
     
@@ -78,7 +78,7 @@ public enum SecureAPIEnum {
         }
         
         // did not match any API
-        throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);         
+        throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());         
     }
     
 };

@@ -82,6 +82,7 @@ sservice_result_t sservice_securedata_create_from_data
 	IN  sservice_size_t					number_of_owners,
 	IN  sservice_persona_id_t*			owners,
 	IN  sservice_authentication_token_t authentication_token,
+	IN  const char*						trusted_web_domains,
 	OUT sservice_data_handle_t*			data_handle
 	);
 
@@ -242,6 +243,18 @@ sservice_result_t sservice_securedata_get_creator
 	);
 
 
+sservice_result_t sservice_securedata_get_trusted_web_domains_list_size
+	(
+	IN  sservice_data_handle_t data_handle,
+	OUT  sservice_size_t* list_size
+	);
+	
+sservice_result_t sservice_securedata_get_trusted_web_domains_list
+	(
+	IN  sservice_data_handle_t data_handle,
+	IN  sservice_size_t buffer_size,
+	OUT char* buffer
+	);
 /** @} */ 
 /** @defgroup SecureStorage SecureStorage
  @{
@@ -312,7 +325,8 @@ sservice_result_t sservice_securestorage_write
 	IN  sservice_persona_id_t creator,
 	IN  sservice_size_t number_of_owners,
 	IN  sservice_persona_id_t* owners,
-	IN  sservice_authentication_token_t authentication_token
+	IN  sservice_authentication_token_t authentication_token,
+	IN  const char*						trusted_web_domains
 	);
 
 /** Function deletes secure storage from persistent media.
@@ -325,6 +339,67 @@ sservice_result_t sservice_securestorage_delete
 	(
 	IN  const sservice_string_t id,
 	IN  sservice_secure_storage_type_t type
+	);
+
+sservice_result_t sservice_securetransport_open
+	(
+	IN  const char* url,
+	IN  const char* pinned_server_public_certificate,
+	IN  const char* client_private_certificate,
+	IN  sservice_secure_transport_timeout_t timeout,
+	IN  sservice_http_method_t method,
+	OUT sservice_transport_handle_t* handle
+	);
+
+sservice_result_t sservice_securetransport_set_method
+	(
+	IN sservice_transport_handle_t handle,
+    IN  sservice_http_method_t method
+	);    
+
+sservice_result_t sservice_securetransport_set_header
+	(
+	IN  sservice_transport_handle_t handle,
+	IN  const char* key,
+	IN  const char* value
+	);
+
+sservice_result_t sservice_securetransport_set_url
+	(
+	IN sservice_transport_handle_t handle,
+    IN  const char* url
+	);
+
+
+sservice_result_t sservice_securetransport_send_request
+	(
+	IN  sservice_transport_handle_t handle,	
+	IN  const char* request, // utf-8
+	IN  sservice_secure_transport_content_type_t request_format,
+	IN  const char* desc_str, // utf-8
+    OUT  sservice_size_t* response_header_size,
+    OUT  sservice_size_t* response_body_size
+	);
+ 
+sservice_result_t sservice_securetransport_get_response_header
+    (
+	IN  sservice_transport_handle_t handle,
+	IN  sservice_size_t buffer_size,
+    OUT char* buffer
+	);
+
+    
+sservice_result_t sservice_securetransport_get_response_body
+    (
+	IN  sservice_transport_handle_t handle,
+    IN  sservice_size_t buffer_size,
+    OUT char* buffer
+    );
+    
+
+sservice_result_t sservice_securetransport_delete
+	(
+	IN  sservice_transport_handle_t handle
 	);
 
 /** @} */ 

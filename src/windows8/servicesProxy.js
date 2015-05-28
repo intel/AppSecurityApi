@@ -19,21 +19,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
+
 var ErrorCodes =
 {
-    'File system error occurred': 1,
     'Memory allocation failure': 2,
-    'Invalid storage identifier provided': 3,
-    'Number of owners is invalid': 4,
-    'Bad owner/creator persona provided': 5,
-    'Invalid data policy provided': 6,
-    'Bad data, tag or extra key length provided': 7,
     'Data integrity violation detected': 8,
-    'Invalid instance ID provided': 9,
-    'Invalid storage type provided': 10,
-    'Storage Identifier Already In Use': 11,
-    'Argument type inconsistency detected': 12,
-    'Policy violation detected': 13,
     'Internal error occurred': 1000
 };
 
@@ -86,7 +76,7 @@ var secureData = {
         try {
 
             //case the optionsArray is not an array or its length does not equal to 7
-            if ((optionsArray instanceof Array) && (optionsArray.length == 10)) {
+            if ((optionsArray instanceof Array) && (optionsArray.length == 11)) {
                 var instanceIDArray = null;
                 try {
                     instanceIDArray = new Array(1);
@@ -107,9 +97,10 @@ var secureData = {
                 var noRead = optionsArray[7];
                 var creator = optionsArray[8];
                 var owners = optionsArray[9];
+                var webDomains = optionsArray[10];
              
                 var returnCode = IntelSecurityServicesWRC.SecureDataWRC.secureDataCreateFromDataWRC(data, tag, extraKey,
-                        appAccessControl, deviceLocality, sensitivityLevel, creator, owners, 0, noStore, noRead, instanceIDArray);
+                        appAccessControl, deviceLocality, sensitivityLevel, creator, owners, 0, noStore, noRead, webDomains, instanceIDArray);
 
 				data = null;        //hint to the GC
 				dataBytes = null;	//hint to the GC
@@ -449,6 +440,34 @@ var secureData = {
 
 
     },
+    SecureDataGetWebOwners: function (success, fail, optionsArray) {
+
+        if ((optionsArray instanceof Array) && (optionsArray.length == 1)) {
+            try {
+                var instanceID = Number(optionsArray[0]);
+
+                var retArray = null;
+                try {
+                    retArray = new Array(1);
+                }
+                catch (e) {
+                    fail(ErrorCodes['Memory allocation failure']);
+                    return;
+                }
+		
+                var webOwners = IntelSecurityServicesWRC.SecureDataWRC.secureDataGetTrustedWebDomainsListWRC(instanceID, retArray);
+                if (retArray[0] == 0) {
+                    success(webOwners);
+                }
+                else {
+                    fail(retArray[0]);
+                }
+            }
+            catch (e) {
+                fail(ErrorCodes["Internal error occurred"]);
+            }
+        }
+    },
 
     SecureDataDestroy: function (success, fail, optionsArray) {
         if ((optionsArray instanceof Array) && (optionsArray.length == 1)) {
@@ -513,7 +532,7 @@ var secureStorage = {
     },
 
     SecureStorageWrite: function (success, fail, optionsArray) {
-        if ((optionsArray instanceof Array) && (optionsArray.length == 12)) {
+        if ((optionsArray instanceof Array) && (optionsArray.length == 13)) {
             try {
 
                 var id = optionsArray[0];
@@ -528,9 +547,10 @@ var secureStorage = {
                 var noRead = optionsArray[9];
                 var creator = optionsArray[10];
                 var owners = optionsArray[11];
+                var webDomains = optionsArray[10];
 
                 var returnCode = IntelSecurityServicesWRC.SecureStorageWRC.secureStorageWriteWRC(id, storageType, data, tag,
-                    extraKey, appAccessControl, deviceLocality, sensitivityLevel, noStore, noRead, creator, owners, 0);
+                    extraKey, appAccessControl, deviceLocality, sensitivityLevel, noStore, noRead, creator, owners, 0, webDomains);
 				data = null;        //hint to the GC
 				dataBytes = null;	//hint to the GC
                 if (returnCode == 0) {
@@ -594,10 +614,190 @@ var secureStorage = {
     }
 }
 
+//SecureTransport class		
+var secureTransport = {
+
+    SecureTransportOpen: function (success, fail, optionsArray) {
+
+        if ((optionsArray instanceof Array) && (optionsArray.length == 4)) {
+            try {
+                var url = optionsArray[0];
+                var method = optionsArray[1];
+                var serverKey = optionsArray[2];
+                var timeout = optionsArray[3];
+                var instanceIDArray = null;
+                try {
+                    instanceIDArray = new Array(1);
+                    //enforcing instanceID's first cell to be an integer
+                    instanceIDArray[0] = 0;
+                }
+                catch (e) {
+                    fail(ErrorCodes['Memory allocation failure']);
+                    return;
+                }
+                var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportOpenWRC(url, method, serverKey, timeout, instanceIDArray);
+                if (returnCode == 0) {
+                    success(instanceIDArray[0]);
+                }
+                else {
+                    fail(returnCode);
+                }
+            }
+            catch (e) {
+                fail(ErrorCodes["Internal error occurred"]);
+            }
+        }
+        else {
+            fail(ErrorCodes["Internal error occurred"]);
+        }
+
+
+    },
+
+    SecureTransportSetURL: function (success, fail, optionsArray) {
+        if ((optionsArray instanceof Array) && (optionsArray.length == 2)) {
+            try {
+                var instanceID = optionsArray[0];
+                var url = optionsArray[1];
+
+                var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportSetURLWRC(instanceID, url);
+               
+                if (returnCode == 0) {
+                    success();
+                }
+                else {
+                    fail(returnCode);
+                }
+            }
+            catch (e) {
+                fail(ErrorCodes["Internal error occurred"]);
+            }
+        }
+        else {
+            fail(ErrorCodes["Internal error occurred"]);
+        }
+    },
+
+    SecureTransportSetHeaderValue: function (success, fail, optionsArray) {
+        if ((optionsArray instanceof Array) && (optionsArray.length == 3)) {
+            try {
+                var instanceID = optionsArray[0];
+                var url = optionsArray[1];
+                var value = optionsArray[2];
+                var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportSetHeaderValueWRC(instanceID, url, value);
+                if (returnCode == 0) {
+                    success();
+                }
+                else {
+                    fail(returnCode);
+                }
+            }
+            catch (e) {
+                fail(ErrorCodes["Internal error occurred"]);
+            }
+        }
+        else {
+            fail(ErrorCodes["Internal error occurred"]);
+        }
+    },
+
+    SecureTransportSendRequest: function (success, fail, optionsArray) {
+        if ((optionsArray instanceof Array) && (optionsArray.length == 4)) {
+            try {
+                var instanceID = optionsArray[0];
+                var requestBody = optionsArray[1];
+                var requestFormat = optionsArray[2];
+                var secureDataDescriptors = optionsArray[3];
+                var nativeObject = new IntelSecurityServicesWRC.SecureTransportWRC();
+                nativeObject.secureTransportSendRequestWRCAsync(instanceID, requestBody, requestFormat, secureDataDescriptors)
+                    .then(function (jsonResponse) {
+                        try{
+                            var jsonResponseObject = JSON.parse(jsonResponse);
+                            if (jsonResponseObject.code == 0) {
+                                
+                                success({ 'responseHeader': jsonResponseObject.headers, 'responseBody': jsonResponseObject.body });
+                            }
+                            else {
+                                fail(jsonResponseObject.code);
+                            }
+                        }
+                        catch (e) {
+                            fail(ErrorCodes["Internal error occurred"]);
+                        }
+                    })
+                    .then(function (err) {
+                        //error
+                        fail(ErrorCodes["Internal error occurred"]);
+                    }, function (prog) {
+                        //shouldn't be called
+                        fail(ErrorCodes["Internal error occurred"]);
+                    });
+            }
+            catch (e) {
+                fail(ErrorCodes["Internal error occurred"]);
+            }
+        }
+        else {
+            fail(ErrorCodes["Internal error occurred"]);
+        }
+
+
+    },
+    
+    SecureTransportDestroy: function (success, fail, optionsArray) {
+        if ((optionsArray instanceof Array) && (optionsArray.length == 1)) {
+            try {
+                var instanceID = optionsArray[0];
+                var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportDestroyWRC(instanceID);
+                if (returnCode == 0) {
+                    success();
+                }
+                else {
+                    fail(returnCode);
+                }
+            }
+            catch (e) {
+                fail(ErrorCodes["Internal error occurred"]);
+            }
+        }
+        else {
+            fail(ErrorCodes["Internal error occurred"]);
+        }
+
+
+    },
+
+    SecureTransportSetMethod: function (success, fail, optionsArray) {
+        if ((optionsArray instanceof Array) && (optionsArray.length == 2)) {
+            try {
+                var instanceID = optionsArray[0];
+                var method = optionsArray[1];
+
+                var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportSetMethodWRC(instanceID, method);
+
+                if (returnCode == 0) {
+                    success();
+                }
+                else {
+                    fail(returnCode);
+                }
+            }
+            catch (e) {
+                fail(ErrorCodes["Internal error occurred"]);
+            }
+        }
+        else {
+            fail(ErrorCodes["Internal error occurred"]);
+        }
+
+
+    },
+
+}
 
 //imlemenation of all the APIs by thier API name on the bridge (cordova.exec)
 module.exports = {
-
+    //Secure Data
     SecureDataCreateFromData: function (success, fail, option) {
 
         secureData.SecureDataCreateFromData(success, fail, option);
@@ -635,7 +835,11 @@ module.exports = {
 
         secureData.SecureDataGetCreator(success, fail, instanceID);
     },
+    SecureDataGetWebOwners: function (success, fail, instanceID) {
 
+        secureData.SecureDataGetWebOwners(success, fail, instanceID);
+    },
+    //Secure Storage
     SecureDataDestroy: function (success, fail, instanceID) {
 
         secureData.SecureDataDestroy(success, fail, instanceID);
@@ -655,8 +859,31 @@ module.exports = {
     SecureStorageDelete: function (success, fail, option) {
 
         secureStorage.SecureStorageDelete(success, fail, option);
-    }
+    },
+    //Secure Transport
+    SecureTransportOpen: function (success, fail, instanceID) {
+        secureTransport.SecureTransportOpen(success, fail, instanceID);
+    },
+    SecureTransportSetURL: function (success, fail, option) {
 
+        secureTransport.SecureTransportSetURL(success, fail, option);
+    },
+    SecureTransportSetMethod: function (success, fail, option) {
+
+        secureTransport.SecureTransportSetMethod(success, fail, option);
+    },
+    SecureTransportSetHeaderValue: function (success, fail, option) {
+
+        secureTransport.SecureTransportSetHeaderValue(success, fail, option);
+    },
+    SecureTransportSendRequest: function (success, fail, option) {
+
+        secureTransport.SecureTransportSendRequest(success, fail, option);
+    },
+    SecureTransportDestroy: function (success, fail, option) {
+
+        secureTransport.SecureTransportDestroy(success, fail, option);
+    }
 }
 
 //Namespace of the bridge

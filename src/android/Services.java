@@ -19,6 +19,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
+
 package com.intel.security;
 
 import java.io.File;
@@ -78,7 +79,7 @@ public class Services extends CordovaPlugin {
 							SetSserviceContext();
 							if (SetClassPtrToJni() == 0)
 							{
-								throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+								throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
 							}
                             SecureAPIEnum api = SecureAPIEnum.CreateSecureAPIEnum(action);
                             switch (api) {
@@ -110,6 +111,9 @@ public class Services extends CordovaPlugin {
                                 case SECURE_DATA_GET_CREATOR_STRING:
                                     SecureDataGetCreatorExecute(args, callbackContext);
                                     break;
+                                case SECURE_DATA_GET_WEB_OWNERS_STRING:
+                                    GetTrustedWebDomains(args, callbackContext) ;
+                                    break ;
                                 case SECURE_DATA_DESTROY_STRING:
                                     SecureDataDestroyExecute(args, callbackContext);
                                     break;
@@ -126,15 +130,33 @@ public class Services extends CordovaPlugin {
                                 case SECURE_STORAGE_DELETE_STRING:
                                     SecureStorageDeleteExecute(args, callbackContext);
                                     break;
-                            };
+                                case SECURE_TRANSPORT_OPEN_STRING:
+                                	SecureTransportOpenExcute(args, callbackContext);
+                                	break;
+                                case SECURE_TRANSPORT_SET_URL_STRING:
+                                	SecureTransportSetURLExcute(args, callbackContext);
+                                    break;
+                                case SECURE_TRANSPORT_SET_METHOD_STRING:
+                                	SecureTransportSetMethodExcute(args, callbackContext);
+                                    break;
+                                case SECURE_TRANSPORT_SET_HEADER_VALUE_STRING:
+                                	SecureTransportSetHeaderValueExcute(args, callbackContext);
+                                    break;
+                                case SECURE_TRANSPORT_SEND_REQUEST_STRING:
+                                	SecureTransportSendRequestExcute(args, callbackContext);
+                                    break;
+                                case SECURE_TRANSPORT_DESTROY_STRING:
+                                	SecureTransportDestroyExcute(args, callbackContext);
+                                    break;
+							};
                         } catch (ErrorCodeException e){                            
-                            callbackContext.error(e.getErrorCodeEnum().getErrorCode());
+                            callbackContext.error(e.getErrorCode());
                         } catch (JSONException e){
-                            callbackContext.error(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getErrorCode());
+                            callbackContext.error(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
                         } catch (OutOfMemoryError e){
-                            callbackContext.error(ErrorCodeEnum.MEMORY_ALLOCATION_FAILURE.getErrorCode());
+                            callbackContext.error(ErrorCodeEnum.MEMORY_ALLOCATION_FAILURE.getValue());
                         } catch (Exception e) {
-                            callbackContext.error(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getErrorCode());
+                            callbackContext.error(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
                         }                        
                     }
                 });
@@ -151,8 +173,8 @@ public class Services extends CordovaPlugin {
     
     protected void SecureDataCreateFromDataExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
         
-        if (args.length() != 10) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+        if (args.length() != 11) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
 
         String dataStr = args.getString(0);
@@ -165,10 +187,11 @@ public class Services extends CordovaPlugin {
         int noRead = args.getInt(7);
         long creator = args.getLong(8);
         JSONArray ownersUIDJSONArray = args.getJSONArray(9);
+        String webDomains = args.getString(10);
 
         SecureData sData = new SecureData();                               
         long instanceID = sData.CreateFromDataAPI(dataStr, tagStr, extraKey, appAccessControl, deviceLocality, sensitivityLevel, noStore, noRead,
-        		creator, ownersUIDJSONArray);
+        		creator, ownersUIDJSONArray, webDomains);
 
         // trying to clean plain text from memory
         dataStr = null;
@@ -179,7 +202,7 @@ public class Services extends CordovaPlugin {
     protected void SecureDataCreateFromSealedDataExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
         
         if (args.length() != 2) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         String sealedDataStr = args.getString(0);
         long extraKey = args.getLong(1);
@@ -190,7 +213,7 @@ public class Services extends CordovaPlugin {
     
     protected void SecureDataChangeExtraKeyExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
     	if (args.length() != 2) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
     	 long instanceID = args.getLong(0);
          long extraKeyInstanceID = args.getLong(1);
@@ -201,7 +224,7 @@ public class Services extends CordovaPlugin {
     protected void SecureDataGetDataExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
         
         if (args.length() != 1) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);                                                                
         SecureData sData = new SecureData();
@@ -212,7 +235,7 @@ public class Services extends CordovaPlugin {
     protected void SecureDataGetSealedDataExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
         
         if (args.length() != 1) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         SecureData sData = new SecureData();
@@ -223,7 +246,7 @@ public class Services extends CordovaPlugin {
     protected void SecureDataGetTagExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
      
         if (args.length() != 1) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         SecureData sData = new SecureData();
@@ -235,7 +258,7 @@ public class Services extends CordovaPlugin {
         
         
         if (args.length() != 1) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         SecureData sData = new SecureData();
@@ -246,7 +269,7 @@ public class Services extends CordovaPlugin {
     protected void SecureDataGetOwnersExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
         
         if (args.length() != 1) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         SecureData sData = new SecureData();
@@ -257,7 +280,7 @@ public class Services extends CordovaPlugin {
     protected void SecureDataGetCreatorExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
      
         if (args.length() != 1) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         SecureData sData = new SecureData();
@@ -265,11 +288,31 @@ public class Services extends CordovaPlugin {
         callbackContext.success(Long.toString(creator));
     }
 
+//    protected void SecureDataGetTrustedWebDomainsListSize(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
+//     
+//        if (args.length() != 1) {
+//            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+//        }
+//        long instanceID = args.getLong(0);
+//        SecureData sData = new SecureData();
+//        int wdListSize = sData.GetTrustedWebDomainsListLengthAPI(instanceID);
+//        callbackContext.success(Int.toString(wdListSize));
+//    }
+    protected void GetTrustedWebDomains(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
+     
+        if (args.length() != 1) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+        }
+        long instanceID = args.getLong(0);
+        SecureData sData = new SecureData();
+        String retStr = sData.GetTrustedWebDomainsAPI(instanceID);
+        callbackContext.success(retStr);
+    }
     
     protected void SecureDataDestroyExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
         
         if (args.length() != 1) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         SecureData sData = new SecureData();
@@ -280,7 +323,7 @@ public class Services extends CordovaPlugin {
     protected void SecureStorageReadExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
      
         if (args.length() != 3) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         String id = args.getString(0);
         int storageType = args.getInt(1);
@@ -292,8 +335,8 @@ public class Services extends CordovaPlugin {
     
     protected void SecureStorageWriteExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
         
-        if (args.length() != 12) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+        if (args.length() != 13) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
 		
         String id = args.getString(0);
@@ -308,17 +351,18 @@ public class Services extends CordovaPlugin {
         int noRead = args.getInt(9);
         long creator = args.getLong(10);
         JSONArray ownersUIDJSONArray = args.getJSONArray(11);
+        String trustedWebDomains = args.getString(12) ;
 		
         SecureStorage sStorage = new SecureStorage();
         sStorage.WriteAPI(id, storageType, dataStr, tagStr, extraKey, appAccessControl, deviceLocality, sensitivityLevel, 
-        		noStore, noRead, creator, ownersUIDJSONArray);
+        		noStore, noRead, creator, ownersUIDJSONArray, trustedWebDomains);
         callbackContext.success();
     }
 	
 	protected void SecureStorageWriteSecureDataExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
         
         if (args.length() != 3) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         String id = args.getString(0);
         int storageType = args.getInt(1);
@@ -331,12 +375,123 @@ public class Services extends CordovaPlugin {
     protected void SecureStorageDeleteExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
         
         if (args.length() != 2) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         String id = args.getString(0);
         int storageType = args.getInt(1);
         SecureStorage sStorage = new SecureStorage();
         sStorage.DeleteAPI(id, storageType);
+        callbackContext.success();
+    }
+    protected void SecureTransportOpenExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
+    	
+    	Log.d("SEAL_ROCK", "in SecureTransportOpenExcute");
+        if (args.length() != 4) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+        }
+        String url = args.getString(0);
+        int method = args.getInt(1);
+        String serverKey = args.getString(2);
+        int timeout = args.getInt(3);
+        
+        Log.d("SEAL_ROCK", "url = "+ url);
+        Log.d("SEAL_ROCK", "method = "+ method);
+        Log.d("SEAL_ROCK", "serverKey = "+ serverKey);
+        Log.d("SEAL_ROCK", "timeout = "+ timeout);
+        
+        SecureTransport sTransport = new SecureTransport();
+        long instanceID = sTransport.OpenAPI(url, method, serverKey, timeout);
+        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
+        callbackContext.success(Long.toString(instanceID));        
+    }
+    
+    protected void SecureTransportSetURLExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
+    	
+        Log.d("SEAL_ROCK", "in SecureTransportSetURLExcute");
+        if (args.length() != 2) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+        }
+        long instanceID = args.getLong(0);
+        String url = args.getString(1);
+                
+        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
+        Log.d("SEAL_ROCK", "url = "+ url);        
+        
+        SecureTransport sTransport = new SecureTransport();
+        sTransport.SetURLAPI(instanceID, url);
+        callbackContext.success();
+    }
+    
+    protected void SecureTransportSetMethodExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
+    	
+        Log.d("SEAL_ROCK", "in SecureTransportSetMethodExcute");
+        if (args.length() != 2) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+        }
+        long instanceID = args.getLong(0);
+        int method = args.getInt(1);
+        
+                        
+        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
+        Log.d("SEAL_ROCK", "method = "+ method);
+        
+        SecureTransport sTransport = new SecureTransport();
+        sTransport.SetMethodAPI(instanceID, method);
+        callbackContext.success();
+    }
+    
+    protected void SecureTransportSetHeaderValueExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
+    	
+        Log.d("SEAL_ROCK", "in SecureTransportSetHeaderValueExcute");
+        if (args.length() != 3) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+        }
+        long instanceID = args.getLong(0);
+        String key = args.getString(1);
+        String value = args.getString(2);
+        
+        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
+        Log.d("SEAL_ROCK", "key = "+ key);
+        Log.d("SEAL_ROCK", "value = "+ value);
+        
+        SecureTransport sTransport = new SecureTransport();
+        sTransport.SetHeaderValueAPI(instanceID, key, value);
+        callbackContext.success();
+    }
+    
+    protected void SecureTransportSendRequestExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
+    	
+        Log.d("SEAL_ROCK", "in SecureTransportSendRequestExcute");
+        if (args.length() != 4) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+        }
+        long instanceID = args.getLong(0);
+        String requestBody = args.getString(1);
+        int requestFormat = args.getInt(2);
+        String secureDataDescriptors = args.getString(3);
+        
+        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
+        Log.d("SEAL_ROCK", "requestBody = "+ requestBody);
+        Log.d("SEAL_ROCK", "requestFormat = "+ requestFormat);
+        Log.d("SEAL_ROCK", "secureDataDescriptors = "+ secureDataDescriptors);
+        
+        SecureTransport sTransport = new SecureTransport();
+        JSONObject responseObject = sTransport.SendRequestAPI(instanceID, requestBody, requestFormat, secureDataDescriptors);
+
+        callbackContext.success(responseObject);
+    }
+    
+    protected void SecureTransportDestroyExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
+    	
+        Log.d("SEAL_ROCK", "in SecureTransportDestroyExcute");
+        if (args.length() != 1) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+        }
+        long instanceID = args.getLong(0);
+        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
+        
+        SecureTransport sTransport = new SecureTransport();
+        sTransport.DestroyAPI(instanceID);
         callbackContext.success();
     }
 }

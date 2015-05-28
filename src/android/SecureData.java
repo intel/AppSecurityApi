@@ -19,6 +19,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
+
 package com.intel.security;
 import java.io.UnsupportedEncodingException;
 
@@ -33,7 +34,7 @@ public class SecureData {
 
     protected native int createFromDataJNI(int dataSize, byte[] data, int tagSize, byte[] tag, long extraKey,
             int appAccessControl, int deviceLocality, int sensitivityLevel, int noStore, int noRead,long creatorUID, int numberOfOwners, 
-            long[] owners, long authenticationToken, int instanceIDArraySize, /*OUT*/ long[] instanceIDArray);    
+            long[] owners, long authenticationToken,  String trustedWebDomains, int instanceIDArraySize, /*OUT*/ long[] instanceIDArray);    
     protected native int createFromSealedDataJNI(int sealedDataSize, byte[] sealedData, long extraKey, int instanceIDArraySize, /*OUT*/ long[] instanceIDArray);    
     protected native int getDataSizeJNI(long instanceID, int answerArraySize, /*OUT*/ int[] answerArray);
     protected native int getDataJNI(long instanceID, long authenticationToken, int bufferSize, /*OUT*/ byte[] buffer);
@@ -46,6 +47,7 @@ public class SecureData {
     protected native int getCreatorJNI(long instanceID, int answerArraySize, /*OUT*/ long[] answerArray);
     protected native int getNumberOfOwnersJNI(long instanceID, int answerArraySize, /*OUT*/ int[] answerArray);
     protected native int getOwnersJNI(long instanceID, int ownersArraySize, /*OUT*/ long[] ownersArray);  
+    protected native int getTrustedWebDomainsJNI(long instanceID, StringBuffer trustedWebDomains);
     
     protected native int destroyJNI(long instanceID);
 
@@ -53,13 +55,13 @@ public class SecureData {
     final protected String dataEncoding = "UTF-16LE";
 
     public long CreateFromDataAPI(String dataStr, String tagStr, long extraKey, int appAccessControl, int deviceLocality,
-            int sensitivityLevel, int noStore, int noRead, long creator, JSONArray ownersUIDJSONArray) 
+            int sensitivityLevel, int noStore, int noRead, long creator, JSONArray ownersUIDJSONArray, String trustedWebDomains) 
             		throws ErrorCodeException, JSONException, UnsupportedEncodingException {
 
         if (dataStr == null         ||            
             tagStr == null          ||
             ownersUIDJSONArray.length() == 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
 
         // convert data to byte[]
@@ -82,7 +84,7 @@ public class SecureData {
         final long authenticationToken = 0; //place holder for next version
         int result = createFromDataJNI(data.length, data, tag.length, tag, extraKey, 
                 appAccessControl, deviceLocality, sensitivityLevel, noStore, noRead, creator, ownersUIDJSONArray.length(), owners, 
-                authenticationToken, instanceIDArraySize, instanceIDArray);        
+                authenticationToken, trustedWebDomains, instanceIDArraySize, instanceIDArray);        
         
         // clean plain text from memory
         for (int i = 0; i<data.length; i++ )
@@ -92,7 +94,7 @@ public class SecureData {
         dataStr = null;// hint for the garbage collector
         
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         long instanceID = instanceIDArray[0];        
@@ -102,7 +104,7 @@ public class SecureData {
     public long CreateFromSealedDataAPI(String sealedDataBase64Str, long extraKey) throws ErrorCodeException {
         
         if (sealedDataBase64Str == null) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
                 
         // decode data from Base64 to byte[]
@@ -111,7 +113,7 @@ public class SecureData {
             sealedData = Base64.decode(sealedDataBase64Str, Base64.DEFAULT);          
         } catch (IllegalArgumentException e)
         {      
-            throw new ErrorCodeException(ErrorCodeEnum.DATA_INTEGRITY_VIOLATION_DETECTED);
+            throw new ErrorCodeException(ErrorCodeEnum.DATA_INTEGRITY_VIOLATION_DETECTED.getValue());
         }
         // create array to get instanceID as a result in array 
         final int instanceIDArraySize = 1; 
@@ -119,7 +121,7 @@ public class SecureData {
         
         int result = createFromSealedDataJNI(sealedData.length, sealedData, extraKey, instanceIDArraySize, instanceIDArray);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
 
         long instanceID = instanceIDArray[0];        
@@ -130,7 +132,7 @@ public class SecureData {
     	
     	int result = changeExtraKeyJNI(instanceID, extraKeyInstanceID);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         return;
     }
@@ -142,7 +144,7 @@ public class SecureData {
         
         int result = getDataSizeJNI(instanceID, answerArraySize, answerArray);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }   
         
         int dataSize = answerArray[0];
@@ -154,7 +156,7 @@ public class SecureData {
         int bufferSize = GetDataSizeAPI(instanceID);
         if (bufferSize <= 0){
             // expected to fail before
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         byte[] buffer = new byte[bufferSize];
         
@@ -162,7 +164,7 @@ public class SecureData {
         int result = getDataJNI(instanceID, authenticationToken, bufferSize, buffer);
         
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
                
         String data = new String(buffer, dataEncoding);
@@ -176,7 +178,7 @@ public class SecureData {
         
         int result = getPolicyJNI(instanceID, bufferSize, buffer);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         // write policy to JSONObject
@@ -196,7 +198,7 @@ public class SecureData {
         
         int result = getTagSizeJNI(instanceID, answerArraySize, answerArray);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         int tagSize = answerArray[0];
@@ -211,7 +213,7 @@ public class SecureData {
             byte[] buffer = new byte[bufferSize];
 			int result = getTagJNI(instanceID, bufferSize, buffer);
 	        if (result != 0) {            
-	            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+	            throw new ErrorCodeException(result);
 	        }           
 
 			tag = new String(buffer, dataEncoding);
@@ -227,7 +229,7 @@ public class SecureData {
         
         int result = getSealedDataSizeJNI(instanceID, answerArraySize, answerArray);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         int sealedDataSize = answerArray[0];
@@ -239,13 +241,13 @@ public class SecureData {
         int bufferSize = GetSealedDataSizeAPI(instanceID);        
         if (bufferSize <= 0){
             // expected to fail before
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }        
         byte[] buffer = new byte[bufferSize];
         
         int result = getSealedDataJNI(instanceID, bufferSize, buffer);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         // encode sealed data using Base64
@@ -261,7 +263,7 @@ public class SecureData {
         
         int result = getNumberOfOwnersJNI(instanceID, answerArraySize, answerArray);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         int numberOfOwners = answerArray[0];
@@ -273,13 +275,13 @@ public class SecureData {
         int numberOfOwners = GetNumberOfOwnersAPI(instanceID);
         if (numberOfOwners <= 0){
             // expected to fail before
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED);
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         } 
         long[] buffer = new long[numberOfOwners];
         
         int result = getOwnersJNI(instanceID, numberOfOwners, buffer);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         // create JSON Array with the result 
@@ -300,18 +302,27 @@ public class SecureData {
         
         int result = getCreatorJNI(instanceID, answerArraySize, answerArray);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         long creator = answerArray[0];
         return creator;
     }
-    
+    public String GetTrustedWebDomainsAPI(long instanceID) throws ErrorCodeException {
+        
+        StringBuffer wdString = new StringBuffer ("");
+        int result = getTrustedWebDomainsJNI(instanceID, wdString );
+        if (result != 0) {            
+            throw new ErrorCodeException(result);
+        }
+        return wdString.toString() ;
+    }
+
     public void DestoryAPI(long instanceID) throws ErrorCodeException {
         
         int result = destroyJNI(instanceID);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         return;

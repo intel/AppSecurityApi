@@ -40,11 +40,18 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 - (void) SecureDataGetPolicy:(CDVInvokedUrlCommand *)command;
 - (void) SecureDataGetOwners:(CDVInvokedUrlCommand *)command;
 - (void) SecureDataGetCreator:(CDVInvokedUrlCommand *)command;
+- (void) SecureDataGetWebOwners:(CDVInvokedUrlCommand *)command;
 - (void) SecureDataDestroy:(CDVInvokedUrlCommand *)command;
 - (void) SecureStorageRead:(CDVInvokedUrlCommand *)command;
 - (void) SecureStorageWrite:(CDVInvokedUrlCommand *)command;
 - (void) SecureStorageWriteSecureData:(CDVInvokedUrlCommand *)command;
 - (void) SecureStorageDelete:(CDVInvokedUrlCommand *)command;
+- (void) SecureTransportOpen:(CDVInvokedUrlCommand *)command;
+- (void) SecureTransportSetURL:(CDVInvokedUrlCommand *)command;
+- (void) SecureTransportSetMethod:(CDVInvokedUrlCommand *)command;
+- (void) SecureTransportSetHeaderValue:(CDVInvokedUrlCommand *)command;
+- (void) SecureTransportSendRequest:(CDVInvokedUrlCommand *)command;
+- (void) SecureTransportDestroy:(CDVInvokedUrlCommand *)command;
 
 
 

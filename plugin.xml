@@ -3,7 +3,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"    
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="com.intel.security"
-    version="1.1.1">
+    version="1.2.0">
     <name>Intel Security Services plugin</name>
     <description>Intel Security Services Plugin</description>
     <license></license>
@@ -23,19 +23,21 @@
 
         <source-file src="src/android/Callbacks.java" target-dir="src/com/intel/security" />
         <source-file src="src/android/Services.java" target-dir="src/com/intel/security" />
-	<source-file src="src/android/SecureAPIEnum.java" target-dir="src/com/intel/security" />
+		<source-file src="src/android/SecureAPIEnum.java" target-dir="src/com/intel/security" />
         <source-file src="src/android/SecureData.java" target-dir="src/com/intel/security" />
-	<source-file src="src/android/SecureStorage.java" target-dir="src/com/intel/security" />        
-	<source-file src="src/android/ErrorCodeEnum.java" target-dir="src/com/intel/security" />	
+		<source-file src="src/android/SecureStorage.java" target-dir="src/com/intel/security" />
+        <source-file src="src/android/SecureTransport.java" target-dir="src/com/intel/security" />
+        
+		<source-file src="src/android/ErrorCodeEnum.java" target-dir="src/com/intel/security" />	
         <source-file src="src/android/ErrorCodeException.java" target-dir="src/com/intel/security" />		
 
-	<source-file src="libs/x86/sr_agent.cpa" target-dir="assets" />	
-        <source-file src="libs/x86/sr_agent.vp" target-dir="assets" />	
-	<source-file src="libs/x86/libSecurityServices.sb" target-dir="assets" />	
+	<source-file src="src/android/x86/sr_agent.cpa" target-dir="assets" />	
+        <source-file src="src/android/x86/sr_agent.vp" target-dir="assets" />	
+	<source-file src="src/android/x86/libSecurityServices.sb" target-dir="assets" />	
 		
-	<source-file src="libs/armeabi" 	target-dir="libs" />
-	<source-file src="libs/armeabi-v7a" target-dir="libs" />
-	<source-file src="libs/x86" 		target-dir="libs" />
+	<source-file src="src/android/armeabi" 	target-dir="libs" />
+	<source-file src="src/android/armeabi-v7a" target-dir="libs" />
+	<source-file src="src/android/x86" 		target-dir="libs" />
 
     </platform>
 
@@ -64,6 +66,9 @@
         <source-file src="src/ios/libsService.a" framework="true" />
         <source-file src="src/ios/libkeyStore.a" framework="true" />
         <source-file src="src/ios/libcrypto.a" framework="true" />
+        <!-- <source-file src="src/ios/libssl.a" framework="true" /> -->
+        <source-file src="src/ios/libcurl.a" framework="true" />
+        <source-file src="src/ios/libjansson.a" framework="true" />
         <framework src="libc++.dylib" />
         <framework src="libstdc++.dylib" />
     
@@ -79,7 +84,7 @@
 		<js-module src="src/windows8/servicesProxy.js" name="SecureProxy">
 			<merges target="" />
 		</js-module>
-		<framework src="src/windows8/libs/x86/IntelSecurityServicesWRC.winmd" custom="true"/>	
+		<framework src="src/windows8/libs/x86/IntelSecurityServicesWRC.winmd" custom="true"/>
 		<config-file target="package.appxmanifest" parent="/Package/Dependencies">
            <PackageDependency Name="Microsoft.VCLibs.110.00" MinVersion="11.0.0.0" />
         </config-file>
@@ -96,7 +101,6 @@
 			<merges target="" />
 		</js-module>
 		<framework src="src/windows8/libs/x86/IntelSecurityServicesWRC.winmd" custom="true" />
-		<source-file src="src/windows8/libs/x86/IntelSecurityServicesWRC.dll"/>
 		<config-file target="package.windows.appxmanifest" parent="/Package/Dependencies">
             <PackageDependency Name="Microsoft.VCLibs.120.00" MinVersion="12.0.0.0" />
         </config-file>

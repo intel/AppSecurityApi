@@ -19,19 +19,20 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
+
 package com.intel.security;
 
 //import android.util.Log;
 
 public class ErrorCodeException extends Exception {
     
-    private ErrorCodeEnum errorCodeEnum;
-    public ErrorCodeEnum getErrorCodeEnum(){
-        return this.errorCodeEnum;
+    private int errorCode;
+    public int getErrorCode(){
+        return this.errorCode;
     }
 
-    public ErrorCodeException(ErrorCodeEnum errorCodeEnum) {
-        this.errorCodeEnum = errorCodeEnum;
+    public ErrorCodeException(int errorCode) {
+        this.errorCode = errorCode;
     }
 
     private static final long serialVersionUID = 1L;

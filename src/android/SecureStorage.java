@@ -19,6 +19,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
+
 package com.intel.security;
 
 import java.io.UnsupportedEncodingException;
@@ -31,7 +32,7 @@ public class SecureStorage {
     protected native int readJNI(String id, int storageType, long extraKey, int instanceIDArraySize, /*OUT*/ long[] instanceIDArray);
 	protected native int writeJNI(String id, int storageType,int dataSize, byte[] data, int tagSize, byte[] tag, 
             long extraKey, int appAccessControl, int deviceLocality, int sensitivityLevel, int noStore, int noRead, long creatorUID, int numberOfOwners, 
-            long[] owners, long authenticationToken);   
+            long[] owners, long authenticationToken, String webDomainsList);   
     
 	protected native int writeSecureDataJNI(String id, int storageType, long instanceID);    
     protected native int deleteJNI(String id, int storageType);
@@ -46,7 +47,7 @@ public class SecureStorage {
         
         int result = readJNI(id, storageType, extraKey, instanceIDArraySize, instanceIDArray);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
                        
         long instanceID = instanceIDArray[0];        
@@ -54,7 +55,7 @@ public class SecureStorage {
     }
     
     public void WriteAPI(String id, int storageType, String dataStr, String tagStr, long extraKey, int appAccessControl, int deviceLocality,
-            int sensitivityLevel, int noStore, int noRead, long creator, JSONArray ownersUIDJSONArray) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
+            int sensitivityLevel, int noStore, int noRead, long creator, JSONArray ownersUIDJSONArray, String trustedWebDomains) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
 
         // convert data to byte[]
         byte[] data = dataStr.getBytes(dataEncoding);
@@ -72,9 +73,9 @@ public class SecureStorage {
         final long authenticationToken = 0; //place holder for next version
 		int result = writeJNI(id, storageType, data.length, data, tag.length, tag, extraKey,
                 appAccessControl, deviceLocality, sensitivityLevel, noStore, noRead, creator, ownersUIDJSONArray.length(), owners, 
-                authenticationToken);
+                authenticationToken, trustedWebDomains);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         return;
@@ -84,7 +85,7 @@ public class SecureStorage {
 
         int result = writeSecureDataJNI(id, storageType, dataHandle);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         return;
@@ -95,7 +96,7 @@ public class SecureStorage {
 
         int result = deleteJNI(id, storageType);
         if (result != 0) {            
-            throw new ErrorCodeException(ErrorCodeEnum.CreateErrorCodeEnum(result));
+            throw new ErrorCodeException(result);
         }
         
         return;

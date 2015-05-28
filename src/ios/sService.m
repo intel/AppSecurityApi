@@ -19,8 +19,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
+
 #ifndef DEBUG
+#ifndef NDEBUG
 #define NDEBUG
+#endif
 #endif
 
 #import "sService.h"
@@ -114,7 +117,7 @@ static inline void DoNothing(char const * formatStr, ... )
 {
 	//Check input parameter. Probably not necessary
     
-    if( ![self checkArguments:command argNumber:10])
+    if( ![self checkArguments:command argNumber:11])
 	{
 		XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code ) ;
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt: SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
@@ -129,6 +132,7 @@ static inline void DoNothing(char const * formatStr, ... )
         sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
         NSString *dataStr = NULL;
         NSString *tagStr  = NULL;
+        NSString *trustedWebDomainsStr = NULL ;
         sservice_data_handle_t extraKey= 0;
         NSInteger appAccessControl= 0;
         NSInteger deviceLocality= 0;
@@ -147,6 +151,7 @@ static inline void DoNothing(char const * formatStr, ... )
         noRead = [ self getIntFromArgument:command argNumber:7 ];
         creator= [self getIntFromArgument:command argNumber: 8 ];
         owners= [command.arguments objectAtIndex:9];
+        trustedWebDomainsStr = [command.arguments objectAtIndex:10];
         if(!dataStr || !owners)
         {
             res = SSERVICE_ERROR_INVALIDPOINTER ;
@@ -193,6 +198,11 @@ static inline void DoNothing(char const * formatStr, ... )
             {
                 tag =  [tagStr dataUsingEncoding:STRING_ENCODING ];
             }
+            NSData *trustedWebDomains = nil ;
+            if(trustedWebDomainsStr)
+            {
+                trustedWebDomains =  [trustedWebDomainsStr dataUsingEncoding:NSUTF8StringEncoding ];
+            }
             
             sservice_secure_data_policy_t access_policy ;
             access_policy.device_policy = (sservice_locality_type_t)deviceLocality;
@@ -209,6 +219,7 @@ static inline void DoNothing(char const * formatStr, ... )
                                                        (sservice_size_t)owners_num,
                                                        owners_list,
                                                        authentication_token,
+                                                       trustedWebDomains ? [trustedWebDomains bytes ]:NULL,
                                                        &dataHandle);
         }
         if(data)
@@ -700,6 +711,63 @@ static inline void DoNothing(char const * formatStr, ... )
     }];
 }
 
+/** Function is callback for cordova call of
+ *         cordova.exec(success, failInternal, "IntelSecurity", "SecureDataGetTrustedWebDomainsList", [instanceID]);
+ * @param [in] command - array of parameters, passed by Cordova runtime.
+ * @return nothing; result is passed to callback using self.commandDelegate
+ */
+- (void) SecureDataGetWebOwners:(CDVInvokedUrlCommand *)command
+{
+    if( ![self checkArguments:command argNumber:1])
+    {
+        XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code ) ;
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt: SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+	//this call will move the rest of the procedure to another thread
+    [self.commandDelegate runInBackground:^{
+        sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
+        //Retrieve all necessary parameters.
+        sservice_handle_t data_handle = [self getHandleFromArgument: command argNumber: 0 ];
+        sservice_size_t list_size = 0 ;
+        char* list_buffer = NULL ;
+        //request data size and prepare buffer for runtime call
+        res = sservice_securedata_get_trusted_web_domains_list_size( data_handle, &list_size ) ;
+        if( IS_SUCCESS(res) )
+        {
+            list_buffer = calloc( 1, list_size ) ;
+            if(!list_buffer)
+            {
+                res = SSERVICE_ERROR_INSUFFICIENTMEMORY ;
+            }
+        }
+        //Call runtime to performe action
+        if( IS_SUCCESS(res) )
+        {
+            res = sservice_securedata_get_trusted_web_domains_list(data_handle, list_size, list_buffer);
+        }
+        //Prepare callback parameters and execute necessary callback.
+        CDVPluginResult *pluginResult = NULL;
+        if( IS_SUCCESS(res) )
+        {
+            //Convert results to ObjectiveC NSArray to return to cordova runtime
+            NSString *result = [[NSString alloc] initWithBytes:list_buffer length:list_size encoding:NSUTF8StringEncoding];
+            XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, Success", __FUNCTION__ ) ;
+            pluginResult = [ CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result ];
+        }
+        else
+        {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                messageAsInt:res.error_or_warn_code];
+        }
+        if(list_buffer)
+        {
+            free( list_buffer) ;
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
 
 
 /** Function is callback for cordova call of
@@ -809,7 +877,7 @@ static inline void DoNothing(char const * formatStr, ... )
 - (void) SecureStorageWrite:(CDVInvokedUrlCommand *)command
 {
 	//Check input parameter. Probably not necessary
-    if( ![self checkArguments:command argNumber:12])
+    if( ![self checkArguments:command argNumber:13])
 	{
         XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR ) ;
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
@@ -832,6 +900,7 @@ static inline void DoNothing(char const * formatStr, ... )
         NSInteger noStore= 0;
         NSInteger noRead= 0;
         NSArray *owners= NULL;
+        NSString *trustedWebDomainsStr = NULL ;
         
         if( command )
         {
@@ -845,6 +914,7 @@ static inline void DoNothing(char const * formatStr, ... )
             noRead = [ self getIntFromArgument:command argNumber:9 ];
             creator= [self getIntFromArgument:command argNumber: 10 ];
             owners= [command.arguments objectAtIndex:11];
+            trustedWebDomainsStr = [command.arguments objectAtIndex:12	];
             
             if(!dataStr || !owners)
             {
@@ -890,6 +960,11 @@ static inline void DoNothing(char const * formatStr, ... )
             {
                 tag =  [tagStr dataUsingEncoding:STRING_ENCODING ];
             }
+            NSData *trustedWebDomains = nil ;
+            if(trustedWebDomainsStr)
+            {
+                trustedWebDomains =  [trustedWebDomainsStr dataUsingEncoding:NSUTF8StringEncoding ];
+            }
             sservice_secure_data_policy_t access_policy ;
             access_policy.device_policy = (sservice_locality_type_t)deviceLocality;
             access_policy.application_policy = (sservice_application_access_control_type_t) appAccessControl ;
@@ -906,7 +981,8 @@ static inline void DoNothing(char const * formatStr, ... )
                                                tag ? [tag bytes ]:NULL,
                                                extraKey, &access_policy, creator,
                                                (sservice_size_t)owners_num, owners_list,
-                                               authentication_token
+                                               authentication_token,
+                                               trustedWebDomains ? [trustedWebDomains bytes ]:NULL
                                                );
         }
         
@@ -1019,6 +1095,298 @@ static inline void DoNothing(char const * formatStr, ... )
         }
         // Execute sendPluginResult on this plugin's commandDelegate, passing in the ...
         // ... instance of CDVPluginResult
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+
+/** Function is callback for cordova call of
+ *         cordova.exec(success, failInternal, "IntelSecurity", "SecureStorageDelete", [defaults.id, defaults.storageType]);
+ * @param [in] command - array of parameters, passed by Cordova runtime.
+ * @return nothing; result is passed to callback using self.commandDelegate
+ */
+ - (void) SecureTransportOpen:(CDVInvokedUrlCommand *)command
+{
+    if( ![self checkArguments:command argNumber:4])
+	{
+		XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR ) ;
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+	}
+	//this call will move the rest of the procedure to another thread
+    [self.commandDelegate runInBackground:^{
+        sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
+        NSString *url = [command.arguments objectAtIndex:0];
+        NSInteger method = [self getIntFromArgument: command argNumber: 1];
+        NSString *server = [command.arguments objectAtIndex:2];
+        NSInteger timeout = [self getIntFromArgument: command argNumber: 3 ];
+        XSSLOG_BRIDGE(LOG_INFO, "Entering to %s, url: %s, method: %i, server: %s, timeout:%i", __FUNCTION__, [url UTF8String], method, [server UTF8String], timeout ) ;
+        sservice_transport_handle_t handle = 0 ;
+        res = sservice_securetransport_open([ url UTF8String ],
+                            [ server  UTF8String ],  
+                            NULL,//client_server_private_certificate
+                            (sservice_size_t)timeout, 
+                            (sservice_http_method_t)method, 
+                            (sservice_transport_handle_t*)&handle);
+
+        
+        //Prepare callback parameters and execute necessary callback.
+        CDVPluginResult *pluginResult = NULL ;
+        if( IS_FAILED(res) )
+        {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                messageAsInt:res.error_or_warn_code];
+        }
+        else
+        {
+            XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, Success", __FUNCTION__ ) ;
+            pluginResult = [ CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDouble:handle ];
+         }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+/** Function is callback for cordova call of
+ *         cordova.exec(success, failInternal, "IntelSecurity", "SecureStorageDelete", [defaults.id, defaults.storageType]);
+ * @param [in] command - array of parameters, passed by Cordova runtime.
+ * @return nothing; result is passed to callback using self.commandDelegate
+ */
+- (void) SecureTransportSetURL:(CDVInvokedUrlCommand *)command
+{
+    if( ![self checkArguments:command argNumber:2])
+	{
+		XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR ) ;
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+	}
+	//this call will move the rest of the procedure to another thread
+    [self.commandDelegate runInBackground:^{
+        sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
+
+        sservice_transport_handle_t transportInstanceID= [self getHandleFromArgument: command argNumber: 0 ] ;
+        NSString *url = [command.arguments objectAtIndex:1];
+        //Retrieve all necessary parameters.
+        XSSLOG_BRIDGE(LOG_INFO, "Entering to %s, url: %s" , __FUNCTION__, [url UTF8String]) ;
+        res = sservice_securetransport_set_url( transportInstanceID, [url UTF8String] );
+
+        
+        //Prepare callback parameters and execute necessary callback.
+        CDVPluginResult *pluginResult = NULL ;
+        if( IS_FAILED(res) )
+        {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                messageAsInt:res.error_or_warn_code];
+        }
+        else
+        {
+            XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, Success", __FUNCTION__ ) ;
+            pluginResult = [ CDVPluginResult resultWithStatus: CDVCommandStatus_OK ];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+/** Function is callback for cordova call of
+ *         cordova.exec(success, failInternal, "IntelSecurity", "SecureStorageDelete", [defaults.id, defaults.storageType]);
+ * @param [in] command - array of parameters, passed by Cordova runtime.
+ * @return nothing; result is passed to callback using self.commandDelegate
+ */
+- (void) SecureTransportSetMethod:(CDVInvokedUrlCommand *)command
+{
+    if( ![self checkArguments:command argNumber:2])
+	{
+		XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR ) ;
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+	}
+	//this call will move the rest of the procedure to another thread
+    [self.commandDelegate runInBackground:^{
+        sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
+        sservice_transport_handle_t transportInstanceID= [self getHandleFromArgument: command argNumber: 0 ] ;
+        NSInteger method = [self getIntFromArgument: command argNumber: 1];
+        XSSLOG_BRIDGE(LOG_INFO, "Entering to %s, method: %i" , __FUNCTION__, method) ;
+        res = sservice_securetransport_set_method( transportInstanceID, (sservice_http_method_t)method);    
+        
+        //Prepare callback parameters and execute necessary callback.
+        CDVPluginResult *pluginResult = NULL ;
+        if( IS_FAILED(res) )
+        {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                messageAsInt:res.error_or_warn_code];
+        }
+        else
+        {
+            XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, Success", __FUNCTION__ ) ;
+            pluginResult = [ CDVPluginResult resultWithStatus: CDVCommandStatus_OK ];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+/** Function is callback for cordova call of
+ *         cordova.exec(success, failInternal, "IntelSecurity", "SecureStorageDelete", [defaults.id, defaults.storageType]);
+ * @param [in] command - array of parameters, passed by Cordova runtime.
+ * @return nothing; result is passed to callback using self.commandDelegate
+ */
+ - (void) SecureTransportSetHeaderValue:(CDVInvokedUrlCommand *)command
+{
+    if( ![self checkArguments:command argNumber:3])
+	{
+		XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR ) ;
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+	}
+	//this call will move the rest of the procedure to another thread
+    [self.commandDelegate runInBackground:^{
+        sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
+
+        sservice_transport_handle_t transportInstanceID= [self getHandleFromArgument: command argNumber: 0 ] ;
+        NSString *key = [command.arguments objectAtIndex:1];
+        NSString *value = [command.arguments objectAtIndex:2];
+        //Retrieve all necessary parameters.
+        XSSLOG_BRIDGE(LOG_INFO, "Entering to %s, header: %s, value: %s" , __FUNCTION__, [key UTF8String], [value UTF8String]) ;
+        res = sservice_securetransport_set_header(transportInstanceID, [key UTF8String], [value UTF8String]);    
+
+        //Prepare callback parameters and execute necessary callback.
+        CDVPluginResult *pluginResult = NULL ;
+        if( IS_FAILED(res) )
+        {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                messageAsInt:res.error_or_warn_code];
+        }
+        else
+        {
+            XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, Success", __FUNCTION__ ) ;
+            pluginResult = [ CDVPluginResult resultWithStatus: CDVCommandStatus_OK ];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+/** Function is callback for cordova call of
+ *         cordova.exec(success, failInternal, "IntelSecurity", "SecureStorageDelete", [defaults.id, defaults.storageType]);
+ * @param [in] command - array of parameters, passed by Cordova runtime.
+ * @return nothing; result is passed to callback using self.commandDelegate
+ */
+- (void) SecureTransportSendRequest:(CDVInvokedUrlCommand *)command
+{
+    if( ![self checkArguments:command argNumber:4])
+	{
+		XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR ) ;
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+	}
+	//this call will move the rest of the procedure to another thread
+    [self.commandDelegate runInBackground:^{
+        sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
+
+        sservice_transport_handle_t transportInstanceID= [self getHandleFromArgument: command argNumber: 0 ] ;
+        NSString *requestBody = [command.arguments objectAtIndex:1];
+        NSInteger requestFormat = [self getIntFromArgument: command argNumber: 2];
+        NSString *secureDataDescriptors = [command.arguments objectAtIndex:3];
+        XSSLOG_BRIDGE(LOG_INFO, "Entering to %s, requestBody: %s, format: %i, secureDataDescriptors: %s" , __FUNCTION__, [requestBody UTF8String],requestFormat, [secureDataDescriptors UTF8String]) ;
+        sservice_size_t response_header_size = 0 ;
+        sservice_size_t response_body_size = 0 ;
+        res = sservice_securetransport_send_request(transportInstanceID,
+                    [requestBody UTF8String],
+                    (sservice_secure_transport_content_type_t)requestFormat, 
+                    [secureDataDescriptors UTF8String] ,
+                    &response_header_size, &response_body_size );
+        char *response_header = NULL;
+        //Prepare callback parameters and execute necessary callback.
+        CDVPluginResult *pluginResult = NULL ;
+        if( IS_SUCCESS( res ))
+        {
+            response_header = malloc(response_header_size) ;
+            if(!response_header)
+            {
+                res = SSERVICE_ERROR_INSUFFICIENTMEMORY ;
+                XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, error 0x%x", __FUNCTION__, res.error_or_warn_code ) ;
+            }
+        }
+        char *response_body = NULL ;
+        if( IS_SUCCESS( res ))
+        {
+            response_body =malloc(response_body_size) ;
+            if(!response_body)
+            {
+                res = SSERVICE_ERROR_INSUFFICIENTMEMORY ;
+                XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, error 0x%x", __FUNCTION__, res.error_or_warn_code ) ;
+            }
+        }
+        if( IS_SUCCESS( res ))
+        {
+            res = sservice_securetransport_get_response_header(transportInstanceID, 
+                                                               response_header_size, 
+                                                               response_header );
+        }        
+        if( IS_SUCCESS( res ))
+        {
+            res = sservice_securetransport_get_response_body(transportInstanceID, 
+                                                        response_body_size, 
+                                                        response_body);
+        }
+        if( IS_FAILED(res) )
+        {
+            
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                messageAsInt:res.error_or_warn_code];
+        }
+        else
+        {
+            XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, Success", __FUNCTION__ ) ;
+	    NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+	    [result setObject:[NSString stringWithUTF8String:response_header] forKey:@"responseHeader"];
+	    [result setObject:[NSString stringWithUTF8String:response_body] forKey:@"responseBody"];
+            
+	    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        if(response_body)
+        {
+            free(response_body) ;
+        }
+        if(response_header)
+        {
+            free(response_header) ;
+        }
+        
+    }];
+}
+
+/** Function is callback for cordova call of
+ *         cordova.exec(success, failInternal, "IntelSecurity", "SecureStorageDelete", [defaults.id, defaults.storageType]);
+ * @param [in] command - array of parameters, passed by Cordova runtime.
+ * @return nothing; result is passed to callback using self.commandDelegate
+ */
+- (void) SecureTransportDestroy:(CDVInvokedUrlCommand *)command
+{
+    if( ![self checkArguments:command argNumber:1])
+	{
+		XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR ) ;
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+	}
+	//this call will move the rest of the procedure to another thread
+    [self.commandDelegate runInBackground:^{
+        sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
+        sservice_transport_handle_t transportInstanceID= [self getHandleFromArgument: command argNumber: 0 ] ;
+        XSSLOG_BRIDGE(LOG_INFO, "Entering to %s, transportInstanceID: %x" , __FUNCTION__, transportInstanceID) ;
+
+        res = sservice_securetransport_delete(transportInstanceID);
+        
+        //Prepare callback parameters and execute necessary callback.
+        CDVPluginResult *pluginResult = NULL ;
+        if( IS_FAILED(res) )
+        {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                messageAsInt:res.error_or_warn_code];
+        }
+        else
+        {
+            XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, Success", __FUNCTION__ ) ;
+            pluginResult = [ CDVPluginResult resultWithStatus: CDVCommandStatus_OK ];
+        }
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
 }

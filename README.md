@@ -56,11 +56,10 @@ Cordova 4.1.2 windows build flow
     Copy the script from platforms\windows8\plugins\com.intel.security to
 	 platforms\windows8 and run it from platforms\windows8 directory.
 	Run the following command in a shell:
-	  node.exe ChooseArch_Windows.js <os> <arch> <projectFile> <solutionFile>
+	  node.exe ChooseArch_Windows.js <arch>
 	  Options: 
 		arch : x86/x64/Arm
-		os : windows8 only
-       (i.e. node.exe ChooseArch_Windows.js windows8 x64 CordovaApp.Windows80.jsproj CordovaApp.vs2012.sln)
+       (i.e. node.exe ChooseArch_Windows.js x64)
 
 	Note: To build the Cordova app you need to use 'cordova build --arch <arch>
 	 (I.e. cordova build --arch x64)

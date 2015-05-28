@@ -47,6 +47,24 @@ var errorMessageMap = {
     11      :   'Storage Identifier Already In Use',
     12      :   'Argument type inconsistency detected',
     13      :   'Policy violation detected',
+	14		:	'Invalid web owners list size',
+    16      :   'Server not accessible error',
+    17      :   'Communication timeout error',
+    18      :   'Communication generic error',
+    19      :   'Invalid descriptor structure',
+    20      :   'Invalid descriptor path',
+    21      :   'Invalid descriptor handle',
+    22      :   'Invalid timeout',
+    23      :   'Descriptors not supported for request format',
+    24	    :	'Invalid request format',
+    26      :   'Invalid request body structure',
+    29      :   'Bad URL',
+    30      :   'Invalid HTTP method',
+    32      :   'Invalid certificate format',
+    33      :   'Communication authentication error',
+    34      :   'Invalid argument size',
+    35      :   'Incorrect state',
+    36      :   'Action aborted',
     1000    :   'Internal error occurred',
 };
 
@@ -150,7 +168,7 @@ function isBoolean(val) {
 * @param {Number} val - the number val to check
 */
 function isNumberBooleanValue(val) {
-    return (val != 0 && val != 1);
+    return (val !== 0 && val !== 1);
 }
 
 /**
@@ -163,6 +181,7 @@ var _secureData = {
         var defaults = {
             data:               '',
             tag:                '',
+            webOwners:  	'',
             extraKey:           0,
             appAccessControl:   0,
             deviceLocality:     0,
@@ -180,6 +199,7 @@ var _secureData = {
         // check input type
         if ((typeof defaults.data !== 'string')                         ||
             (typeof defaults.tag !== 'string')                          ||
+            (typeof defaults.webOwners !== 'string')            	||
             (!isValidNonNegativeSafeInteger(defaults.extraKey))         ||
             (!isValidNonNegativeSafeInteger(defaults.appAccessControl)) ||
             (!isValidNonNegativeSafeInteger(defaults.deviceLocality))   ||
@@ -200,7 +220,7 @@ var _secureData = {
                 'IntelSecurity', 
                 'SecureDataCreateFromData', 
                 [defaults.data, defaults.tag, defaults.extraKey, defaults.appAccessControl, defaults.deviceLocality, defaults.sensitivityLevel,
-                    Number(defaults.noStore), Number(defaults.noRead), defaults.creator, defaults.owners]);
+                    Number(defaults.noStore), Number(defaults.noRead), defaults.creator, defaults.owners, defaults.webOwners]);
         }
     },
     createFromSealedData: function (success, fail, options) {
@@ -350,6 +370,20 @@ var _secureData = {
                 [instanceID]);
         }
     },
+    getWebOwners: function (success, fail, instanceID) {
+        if (!isValidNonNegativeSafeInteger(instanceID)) {
+            failInternal('Argument type inconsistency detected', fail);
+        } else {
+            cordova.exec(
+                success, 
+                function(code){
+                    failInternal(code, fail);
+                }, 
+                'IntelSecurity', 
+                'SecureDataGetWebOwners', 
+                [instanceID]);
+        }
+    },
 
     destroy: function (success, fail, instanceID) {
         if (!isValidNonNegativeSafeInteger(instanceID)) {
@@ -435,6 +469,7 @@ var _secureStorage = {
             storageType:        0,
             data:               '',
             tag:                '',
+            webOwners:  	    '',
             extraKey:           0,
             appAccessControl:   0,
             deviceLocality:     0,
@@ -455,6 +490,7 @@ var _secureStorage = {
             (!isValidNonNegativeSafeInteger(defaults.storageType))          ||
             (typeof defaults.data !== 'string')                             ||
             (typeof defaults.tag !== 'string')                              ||
+            (typeof defaults.webOwners !== 'string')                	    ||
             (!isValidNonNegativeSafeInteger(defaults.extraKey))             ||
             (!isValidNonNegativeSafeInteger(defaults.appAccessControl))     ||
             (!isValidNonNegativeSafeInteger(defaults.deviceLocality))       ||
@@ -473,7 +509,7 @@ var _secureStorage = {
                 'IntelSecurity', 
                 'SecureStorageWrite', 
                 [defaults.id, defaults.storageType, defaults.data, defaults.tag, defaults.extraKey, defaults.appAccessControl, defaults.deviceLocality, defaults.sensitivityLevel,
-                       Number(defaults.noStore), Number(defaults.noRead), defaults.creator, defaults.owners]);
+                       Number(defaults.noStore), Number(defaults.noRead), defaults.creator, defaults.owners,defaults.webOwners ]);
         }                
     },
     delete: function (success, fail, options) { 
@@ -503,6 +539,219 @@ var _secureStorage = {
     },
 };
 
+/**
+ * Secure Transport Mega Function
+ * More details can be found in the API documentation
+ */
+var _secureTransport= {
+
+    httpMethodType : {
+        'GET'       : 0,
+        'POST'      : 1,
+        'PUT'       : 2,
+        'DELETE'    : 3,
+        'HEAD'      : 4,
+        'OPTIONS'   : 5
+    },
+    requestFormatType : {
+        'GENERIC':0,
+        'JSON':1,
+        'XML':2,
+    },
+    open: function(success,fail,options){
+	
+        options = options || {};
+        //default value for the optional parameters
+        var defaults = {
+            url         : '',
+            method      : 'GET',
+            serverKey   : '',
+			timeout     : 10000
+        };
+        //setting the default values in case they were not provided
+        for (var key in defaults) {
+            if (options[key] !== undefined) {
+                defaults[key]=options[key];
+            }
+        }
+        if ((typeof defaults.url !== 'string')          ||           
+            (typeof defaults.method !== 'string')       ||
+            (typeof defaults.serverKey !== 'string')    ||
+            (!isValidNonNegativeSafeInteger(defaults.timeout))) {
+            failInternal('Argument type inconsistency detected', fail);
+        } else if (this.httpMethodType.hasOwnProperty(defaults.method) === false){
+            failInternal('Invalid HTTP method', fail);
+        } else {
+            // convert method from string to number            
+            defaults.method = this.httpMethodType[defaults.method];
+            cordova.exec(
+                function(instanceID){
+                    successConvertToNumber(instanceID, success, fail);
+                },
+                function(code){
+                    failInternal(code, fail);
+                },
+                'IntelSecurity', 
+                'SecureTransportOpen', 
+                [defaults.url, defaults.method, defaults.serverKey, defaults.timeout]);
+        }
+    },    
+    setURL: function(success,fail,options){
+	
+        options = options || {};
+        //default value for the optional parameters
+        var defaults = {
+            instanceID  : 0,
+            url         : ''
+        };
+        //setting the default values in case they were not provided
+        for (var key in defaults) {
+            if (options[key] !== undefined) {
+                defaults[key]=options[key];
+            }
+        }
+        if ((!isValidNonNegativeSafeInteger(defaults.instanceID)) ||
+            (typeof defaults.url !== 'string')) {
+            failInternal('Argument type inconsistency detected', fail);
+        } else {
+            cordova.exec(
+                success,
+                function(code){
+                    failInternal(code, fail);
+                },
+                'IntelSecurity', 
+                'SecureTransportSetURL', 
+                [defaults.instanceID, defaults.url]);
+        }
+    },
+    setMethod: function(success,fail,options){
+	
+        options = options || {};
+        //default value for the optional parameters
+        var defaults = {
+            instanceID  : 0,
+            method      : ''
+        };
+        //setting the default values in case they were not provided
+        for (var key in defaults) {
+            if (options[key] !== undefined) {
+                defaults[key]=options[key];
+            }
+        }
+        if ((!isValidNonNegativeSafeInteger(defaults.instanceID)) ||
+            (typeof defaults.method !== 'string')) {
+            failInternal('Argument type inconsistency detected', fail);
+        } else if (this.httpMethodType.hasOwnProperty(defaults.method) === false){
+            failInternal('Invalid HTTP method', fail);
+        } else {
+            // convert method from string to number            
+            defaults.method = this.httpMethodType[defaults.method];
+            cordova.exec(
+                success,
+                function(code){
+                    failInternal(code, fail);
+                },
+                'IntelSecurity', 
+                'SecureTransportSetMethod', 
+                [defaults.instanceID, defaults.method]);
+        }
+    },
+    setHeaderValue: function(success,fail,options){
+	
+        options = options || {};
+        //default value for the optional parameters
+        var defaults = {
+            instanceID  : 0,
+            key         : '',
+            value       : ''
+        };
+        //setting the default values in case they were not provided
+        for (var key in defaults) {
+            if (options[key] !== undefined) {
+                defaults[key]=options[key];
+            }
+        }
+        if ((!isValidNonNegativeSafeInteger(defaults.instanceID))   ||           
+            (typeof defaults.key !== 'string')                      ||
+            (typeof defaults.value !== 'string') ){
+            failInternal('Argument type inconsistency detected', fail);
+        } else {
+            cordova.exec(
+                success,
+                function(code){
+                    failInternal(code, fail);
+                }, 
+                'IntelSecurity', 
+                'SecureTransportSetHeaderValue', 
+                [defaults.instanceID, defaults.key, defaults.value]);
+        }
+    },
+    sendRequest: function(success,fail,options){
+    
+            options = options || {};
+            //default value for the optional parameters
+            var defaults = {
+                instanceID              : 0,
+                requestBody             : '',
+                requestFormat           : 'GENERIC',
+                secureDataDescriptors   : []
+            };
+            //setting the default values in case they were not provided
+            for (var key in defaults) {
+                if (options[key] !== undefined) {
+                    defaults[key]=options[key];
+                }
+            }
+            if ((!isValidNonNegativeSafeInteger(defaults.instanceID))   ||           
+                (typeof defaults.requestBody !== 'string')              ||
+                (typeof defaults.requestFormat !== 'string')            ||
+                (!(defaults.secureDataDescriptors instanceof Array)) ){
+                failInternal('Argument type inconsistency detected', fail);
+            } else if (this.requestFormatType.hasOwnProperty(defaults.requestFormat) === false){
+                failInternal('Invalid request format', fail);
+            } else {
+                // convert format from string to number
+                defaults.requestFormat = this.requestFormatType[defaults.requestFormat];
+				var secureDataDescriptorsJSON = null;
+				try{
+					secureDataDescriptorsJSON = JSON.stringify(defaults.secureDataDescriptors);
+				}
+				catch (e){
+					failInternal('Internal error occurred', fail);
+					return;
+				}	
+                cordova.exec(
+                    success,
+                    function(code){
+                        failInternal(code, function (errObj){
+								if ((errObj.message !== 'Action aborted') &&
+									(typeof fail === 'function')){
+									fail(errObj);
+								}
+							});
+                    }, 
+                    'IntelSecurity', 
+                    'SecureTransportSendRequest', 
+                    [defaults.instanceID, defaults.requestBody, defaults.requestFormat, secureDataDescriptorsJSON]);
+            }
+    },
+
+    destroy: function(success,fail,instanceID){
+
+            if (!isValidNonNegativeSafeInteger(instanceID)) {
+                failInternal('Argument type inconsistency detected', fail);
+            } else {
+                cordova.exec(
+                    success, 
+                    function(code){
+                        failInternal(code, fail);
+                    }, 
+                    'IntelSecurity', 
+                    'SecureTransportDestroy', 
+                    [instanceID]);
+            }
+    }
+};
 
 /** 
  * Constructor that creates an intel.security.errorObject object
@@ -524,6 +773,7 @@ function errorObj(code, message) {
 module.exports = {  
     secureData      : _secureData,
     secureStorage   : _secureStorage,
+    secureTransport : _secureTransport,
     errorObject     : errorObj,
 };  
 

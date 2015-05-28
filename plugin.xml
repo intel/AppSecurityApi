@@ -3,7 +3,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"    
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="com.intel.security"
-    version="1.1.0">
+    version="1.1.1">
     <name>Intel Security Services plugin</name>
     <description>Intel Security Services Plugin</description>
     <license></license>

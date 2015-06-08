@@ -1,12 +1,12 @@
-1.2.0 (May, 2015)
+1.2.0 (June, 2015)
 
 	Added Secure Transport API.
-	Supported Platforms: android, ios, win8.
+	Supported Platforms: Android, iOS, Windows 8
 	
 	The plugin was tested on:
 	- Android ARM and Intel devices
     - iPhone ARM device
-    - Windows 8, Intel (x86, x64) devices
+    - Windows 8, ARM and Intel (x86, x64) devices
 	
 	Known limitations:
 	- public key pinning not supported on Windows and iOS.

@@ -103,8 +103,7 @@ var secureData = {
                         appAccessControl, deviceLocality, sensitivityLevel, creator, owners, 0, noStore, noRead, webDomains, instanceIDArray);
 
 				data = null;        //hint to the GC
-				dataBytes = null;	//hint to the GC
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success(instanceIDArray[0]);
                 }
                 else {
@@ -152,9 +151,9 @@ var secureData = {
                     uintArray[i] = parseInt(uintArray[i]);
                 }
 
-                var extraKey = optionsArray[1]
+                var extraKey = optionsArray[1];
                 var returnCode = IntelSecurityServicesWRC.SecureDataWRC.secureDataCreateFromSealedDataWRC(uintArray, extraKey, instanceIDArray);
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success(instanceIDArray[0]);
                 }
                 else {
@@ -177,7 +176,7 @@ var secureData = {
                 var instanceID = Number(optionsArray[0]);
                 var extraKeyInstanceID = Number(optionsArray[1]);
                 var returnCode = IntelSecurityServicesWRC.SecureDataWRC.secureDataChangeExtraKeyWRC(instanceID, extraKeyInstanceID);
-                if (returnCode != 0) {
+                if (returnCode !== 0) {
                     fail(returnCode);
                 }
                 else {
@@ -209,7 +208,7 @@ var secureData = {
                 }
 
                 var data = IntelSecurityServicesWRC.SecureDataWRC.secureDataGetDataWRC(instanceID, retArray);
-                if (retArray[0] == 0) {
+                if (retArray[0] === 0) {
                     success(data);
                 }
                 else {
@@ -240,7 +239,7 @@ var secureData = {
                     return;
                 }
                 var returnCode = SecureDataGetSealedSize(instanceID, dataSizeArray);
-                if (returnCode != 0) {
+                if (returnCode !== 0) {
                     fail(returnCode);
                     return;
                 }
@@ -248,7 +247,7 @@ var secureData = {
 
                     //dataSizeArray is greater than 0
                     if (dataSizeArray[0] > 0) {
-
+                        var dataArray = null;
                         try {
                             dataArray = new Array(dataSizeArray[0]);
                         }
@@ -258,7 +257,7 @@ var secureData = {
                         }
 
                         returnCode = IntelSecurityServicesWRC.SecureDataWRC.secureDataGetSealedDataWRC(instanceID, dataSizeArray[0], dataArray);
-                        if (returnCode != 0) {
+                        if (returnCode !== 0) {
                             fail(returnCode);
                         }
                         else {
@@ -300,7 +299,7 @@ var secureData = {
                 }
                
                 var tag = IntelSecurityServicesWRC.SecureDataWRC.secureDataGetTagWRC(instanceID, retArray);
-                if (retArray[0] == 0) {
+                if (retArray[0] === 0) {
                     success(tag);
                 }
                 else {
@@ -332,7 +331,7 @@ var secureData = {
                 }
 
                 var returnCode = IntelSecurityServicesWRC.SecureDataWRC.secureDataGetPolicyWRC(instanceID, policyArray);
-                if (returnCode != 0) {
+                if (returnCode !== 0) {
                     fail(returnCode);
                 }
                 else {
@@ -371,7 +370,7 @@ var secureData = {
                     return;
                 }
                 var returnCode = SecureDataGetOwnerNumber(instanceID, dataSizeArray);
-                if (returnCode != 0) {
+                if (returnCode !== 0) {
                     fail(returnCode);
                 }
                 else {
@@ -386,7 +385,7 @@ var secureData = {
                         }
 
                         returnCode = IntelSecurityServicesWRC.SecureDataWRC.secureDataGetOwnersWRC(instanceID, dataSizeArray[0], ownersArray);
-                        if (returnCode == 0) {
+                        if (returnCode === 0) {
                             success(ownersArray);
                         }
                         else {
@@ -423,7 +422,7 @@ var secureData = {
                 }
 
                 var returnCode = IntelSecurityServicesWRC.SecureDataWRC.secureDataGetCreatorWRC(instanceID, dataArray);
-                if (returnCode != 0) {
+                if (returnCode !== 0) {
                     fail(returnCode);
                 }
                 else {
@@ -456,7 +455,7 @@ var secureData = {
                 }
 		
                 var webOwners = IntelSecurityServicesWRC.SecureDataWRC.secureDataGetTrustedWebDomainsListWRC(instanceID, retArray);
-                if (retArray[0] == 0) {
+                if (retArray[0] === 0) {
                     success(webOwners);
                 }
                 else {
@@ -474,7 +473,7 @@ var secureData = {
             try {
                 var instanceID = Number(optionsArray[0]);
                 var returnCode = IntelSecurityServicesWRC.SecureDataWRC.secureDataDestroyWRC(instanceID);
-                if (returnCode != 0) {
+                if (returnCode !== 0) {
                     fail(returnCode);
                 }
                 else {
@@ -492,7 +491,7 @@ var secureData = {
 
     }
 
-}
+};
 
 //SecureStorage class		
 var secureStorage = {
@@ -513,7 +512,7 @@ var secureStorage = {
                 var storageType = optionsArray[1];
                 var extraKey = optionsArray[2];
                 var returnCode = IntelSecurityServicesWRC.SecureStorageWRC.secureStorageReadWRC(id, storageType, extraKey, handleArray);
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success(handleArray[0]);
                 }
                 else {
@@ -552,8 +551,7 @@ var secureStorage = {
                 var returnCode = IntelSecurityServicesWRC.SecureStorageWRC.secureStorageWriteWRC(id, storageType, data, tag,
                     extraKey, appAccessControl, deviceLocality, sensitivityLevel, noStore, noRead, creator, owners, 0, webDomains);
 				data = null;        //hint to the GC
-				dataBytes = null;	//hint to the GC
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success();
                 }
                 else {
@@ -574,7 +572,7 @@ var secureStorage = {
         if ((optionsArray instanceof Array) && (optionsArray.length == 3)) {
             try {
                 var returnCode = IntelSecurityServicesWRC.SecureStorageWRC.secureStorageWriteSecureDataWRC(optionsArray[0], optionsArray[1], optionsArray[2]);
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success();
                 }
                 else {
@@ -595,7 +593,7 @@ var secureStorage = {
             try {
 
                 var returnCode = IntelSecurityServicesWRC.SecureStorageWRC.secureStorageDeleteWRC(optionsArray[0], optionsArray[1]);
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success();
                 }
                 else {
@@ -612,7 +610,7 @@ var secureStorage = {
 
 
     }
-}
+};
 
 //SecureTransport class		
 var secureTransport = {
@@ -636,7 +634,7 @@ var secureTransport = {
                     return;
                 }
                 var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportOpenWRC(url, method, serverKey, timeout, instanceIDArray);
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success(instanceIDArray[0]);
                 }
                 else {
@@ -662,7 +660,7 @@ var secureTransport = {
 
                 var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportSetURLWRC(instanceID, url);
                
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success();
                 }
                 else {
@@ -685,7 +683,7 @@ var secureTransport = {
                 var url = optionsArray[1];
                 var value = optionsArray[2];
                 var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportSetHeaderValueWRC(instanceID, url, value);
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success();
                 }
                 else {
@@ -713,7 +711,7 @@ var secureTransport = {
                     .then(function (jsonResponse) {
                         try{
                             var jsonResponseObject = JSON.parse(jsonResponse);
-                            if (jsonResponseObject.code == 0) {
+                            if (jsonResponseObject.code === 0) {
                                 
                                 success({ 'responseHeader': jsonResponseObject.headers, 'responseBody': jsonResponseObject.body });
                             }
@@ -749,7 +747,7 @@ var secureTransport = {
             try {
                 var instanceID = optionsArray[0];
                 var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportDestroyWRC(instanceID);
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success();
                 }
                 else {
@@ -775,7 +773,7 @@ var secureTransport = {
 
                 var returnCode = IntelSecurityServicesWRC.SecureTransportWRC.secureTransportSetMethodWRC(instanceID, method);
 
-                if (returnCode == 0) {
+                if (returnCode === 0) {
                     success();
                 }
                 else {
@@ -793,7 +791,7 @@ var secureTransport = {
 
     },
 
-}
+};
 
 //imlemenation of all the APIs by thier API name on the bridge (cordova.exec)
 module.exports = {
@@ -884,7 +882,7 @@ module.exports = {
 
         secureTransport.SecureTransportDestroy(success, fail, option);
     }
-}
+};
 
 //Namespace of the bridge
 require("cordova/exec/proxy").add("IntelSecurity", module.exports);

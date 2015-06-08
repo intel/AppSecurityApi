@@ -198,11 +198,6 @@ static inline void DoNothing(char const * formatStr, ... )
             {
                 tag =  [tagStr dataUsingEncoding:STRING_ENCODING ];
             }
-            NSData *trustedWebDomains = nil ;
-            if(trustedWebDomainsStr)
-            {
-                trustedWebDomains =  [trustedWebDomainsStr dataUsingEncoding:NSUTF8StringEncoding ];
-            }
             
             sservice_secure_data_policy_t access_policy ;
             access_policy.device_policy = (sservice_locality_type_t)deviceLocality;
@@ -219,7 +214,7 @@ static inline void DoNothing(char const * formatStr, ... )
                                                        (sservice_size_t)owners_num,
                                                        owners_list,
                                                        authentication_token,
-                                                       trustedWebDomains ? [trustedWebDomains bytes ]:NULL,
+                                                       trustedWebDomainsStr ? [trustedWebDomainsStr cStringUsingEncoding:NSUTF8StringEncoding ] :NULL,
                                                        &dataHandle);
         }
         if(data)
@@ -960,11 +955,6 @@ static inline void DoNothing(char const * formatStr, ... )
             {
                 tag =  [tagStr dataUsingEncoding:STRING_ENCODING ];
             }
-            NSData *trustedWebDomains = nil ;
-            if(trustedWebDomainsStr)
-            {
-                trustedWebDomains =  [trustedWebDomainsStr dataUsingEncoding:NSUTF8StringEncoding ];
-            }
             sservice_secure_data_policy_t access_policy ;
             access_policy.device_policy = (sservice_locality_type_t)deviceLocality;
             access_policy.application_policy = (sservice_application_access_control_type_t) appAccessControl ;
@@ -982,7 +972,7 @@ static inline void DoNothing(char const * formatStr, ... )
                                                extraKey, &access_policy, creator,
                                                (sservice_size_t)owners_num, owners_list,
                                                authentication_token,
-                                               trustedWebDomains ? [trustedWebDomains bytes ]:NULL
+                                               trustedWebDomainsStr ? [trustedWebDomainsStr cStringUsingEncoding:NSUTF8StringEncoding ] :NULL
                                                );
         }
         

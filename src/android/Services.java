@@ -32,7 +32,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
 import android.content.Context;
 import android.provider.Settings;
 
@@ -123,9 +122,6 @@ public class Services extends CordovaPlugin {
                                     break;
                                 case SECURE_STORAGE_WRITE_STRING:
                                     SecureStorageWriteExecute(args, callbackContext);
-                                    break;
-								case SECURE_STORAGE_WRITE_SECURE_DATA_STRING:
-                                    SecureStorageWriteSecureDataExecute(args, callbackContext);
                                     break;
                                 case SECURE_STORAGE_DELETE_STRING:
                                     SecureStorageDeleteExecute(args, callbackContext);
@@ -333,33 +329,7 @@ public class Services extends CordovaPlugin {
         callbackContext.success(Long.toString(instanceID));
     }
     
-    protected void SecureStorageWriteExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
-        
-        if (args.length() != 13) {
-            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
-        }
-		
-        String id = args.getString(0);
-        int storageType = args.getInt(1);
-		String dataStr = args.getString(2);
-        String tagStr = args.getString(3);
-        long extraKey = args.getLong(4);
-        int appAccessControl = args.getInt(5);
-        int deviceLocality = args.getInt(6);
-        int sensitivityLevel = args.getInt(7);
-        int noStore = args.getInt(8);
-        int noRead = args.getInt(9);
-        long creator = args.getLong(10);
-        JSONArray ownersUIDJSONArray = args.getJSONArray(11);
-        String trustedWebDomains = args.getString(12) ;
-		
-        SecureStorage sStorage = new SecureStorage();
-        sStorage.WriteAPI(id, storageType, dataStr, tagStr, extraKey, appAccessControl, deviceLocality, sensitivityLevel, 
-        		noStore, noRead, creator, ownersUIDJSONArray, trustedWebDomains);
-        callbackContext.success();
-    }
-	
-	protected void SecureStorageWriteSecureDataExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
+	protected void SecureStorageWriteExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
         
         if (args.length() != 3) {
             throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
@@ -368,7 +338,7 @@ public class Services extends CordovaPlugin {
         int storageType = args.getInt(1);
         long instanceID = args.getLong(2);
         SecureStorage sStorage = new SecureStorage();
-        sStorage.WriteSecureDataAPI(id, storageType, instanceID);
+        sStorage.WriteAPI(id, storageType, instanceID);
         callbackContext.success();
     }
     
@@ -385,7 +355,6 @@ public class Services extends CordovaPlugin {
     }
     protected void SecureTransportOpenExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
     	
-    	Log.d("SEAL_ROCK", "in SecureTransportOpenExcute");
         if (args.length() != 4) {
             throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
@@ -394,28 +363,18 @@ public class Services extends CordovaPlugin {
         String serverKey = args.getString(2);
         int timeout = args.getInt(3);
         
-        Log.d("SEAL_ROCK", "url = "+ url);
-        Log.d("SEAL_ROCK", "method = "+ method);
-        Log.d("SEAL_ROCK", "serverKey = "+ serverKey);
-        Log.d("SEAL_ROCK", "timeout = "+ timeout);
-        
         SecureTransport sTransport = new SecureTransport();
         long instanceID = sTransport.OpenAPI(url, method, serverKey, timeout);
-        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
         callbackContext.success(Long.toString(instanceID));        
     }
     
     protected void SecureTransportSetURLExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
     	
-        Log.d("SEAL_ROCK", "in SecureTransportSetURLExcute");
         if (args.length() != 2) {
             throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         String url = args.getString(1);
-                
-        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
-        Log.d("SEAL_ROCK", "url = "+ url);        
         
         SecureTransport sTransport = new SecureTransport();
         sTransport.SetURLAPI(instanceID, url);
@@ -424,17 +383,12 @@ public class Services extends CordovaPlugin {
     
     protected void SecureTransportSetMethodExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
     	
-        Log.d("SEAL_ROCK", "in SecureTransportSetMethodExcute");
         if (args.length() != 2) {
             throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         int method = args.getInt(1);
-        
                         
-        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
-        Log.d("SEAL_ROCK", "method = "+ method);
-        
         SecureTransport sTransport = new SecureTransport();
         sTransport.SetMethodAPI(instanceID, method);
         callbackContext.success();
@@ -442,17 +396,12 @@ public class Services extends CordovaPlugin {
     
     protected void SecureTransportSetHeaderValueExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
     	
-        Log.d("SEAL_ROCK", "in SecureTransportSetHeaderValueExcute");
         if (args.length() != 3) {
             throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         String key = args.getString(1);
         String value = args.getString(2);
-        
-        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
-        Log.d("SEAL_ROCK", "key = "+ key);
-        Log.d("SEAL_ROCK", "value = "+ value);
         
         SecureTransport sTransport = new SecureTransport();
         sTransport.SetHeaderValueAPI(instanceID, key, value);
@@ -461,7 +410,6 @@ public class Services extends CordovaPlugin {
     
     protected void SecureTransportSendRequestExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
     	
-        Log.d("SEAL_ROCK", "in SecureTransportSendRequestExcute");
         if (args.length() != 4) {
             throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
@@ -469,11 +417,6 @@ public class Services extends CordovaPlugin {
         String requestBody = args.getString(1);
         int requestFormat = args.getInt(2);
         String secureDataDescriptors = args.getString(3);
-        
-        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
-        Log.d("SEAL_ROCK", "requestBody = "+ requestBody);
-        Log.d("SEAL_ROCK", "requestFormat = "+ requestFormat);
-        Log.d("SEAL_ROCK", "secureDataDescriptors = "+ secureDataDescriptors);
         
         SecureTransport sTransport = new SecureTransport();
         JSONObject responseObject = sTransport.SendRequestAPI(instanceID, requestBody, requestFormat, secureDataDescriptors);
@@ -483,12 +426,10 @@ public class Services extends CordovaPlugin {
     
     protected void SecureTransportDestroyExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
     	
-        Log.d("SEAL_ROCK", "in SecureTransportDestroyExcute");
         if (args.length() != 1) {
             throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
-        Log.d("SEAL_ROCK", "instanceID = "+ instanceID);
         
         SecureTransport sTransport = new SecureTransport();
         sTransport.DestroyAPI(instanceID);

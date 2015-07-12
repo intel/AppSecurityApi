@@ -1,3 +1,21 @@
+1.3.0 (July, 2015)
+
+	Added support for Cordova 5.1.1
+	Added support for Windows 8.1
+	Added support for public key pinning on iOS.
+	Secure Storage API change: "writeSecureData" changed to "write"
+	
+	Supported Platforms: Android, iOS, Windows 8/8.1
+	
+	The plugin was tested on:
+	- Android ARM and Intel devices
+    - iPhone ARM device
+	- Windows 8 Intel (x86, x64) devices
+    - Windows 8.1  ARM and Intel (x86, x64) devices
+	
+	Known limitations:
+	- public key pinning not supported on Windows 8/8.1 .
+	
 1.2.0 (June, 2015)
 
 	Added Secure Transport API.

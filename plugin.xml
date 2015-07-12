@@ -3,7 +3,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"    
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="com.intel.security"
-    version="1.2.0">
+    version="1.3.0">
     <name>Intel Security Services plugin</name>
     <description>Intel Security Services Plugin</description>
     <license></license>
@@ -86,7 +86,6 @@
 		</js-module>
 		<framework src="src/windows8/libs/x86/IntelSecurityServicesWRC.winmd" custom="true"/>
 		<config-file target="package.appxmanifest" parent="/Package/Dependencies">
-           <PackageDependency Name="Microsoft.VCLibs.110.00" MinVersion="11.0.0.0" />
         </config-file>
 	</platform>
 	
@@ -101,9 +100,6 @@
 			<merges target="" />
 		</js-module>
 		<framework src="src/windows8/libs/x86/IntelSecurityServicesWRC.winmd" custom="true" />
-		<config-file target="package.windows.appxmanifest" parent="/Package/Dependencies">
-            <PackageDependency Name="Microsoft.VCLibs.120.00" MinVersion="12.0.0.0" />
-        </config-file>
     </platform>
 	
 </plugin>

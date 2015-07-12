@@ -858,152 +858,12 @@ static inline void DoNothing(char const * formatStr, ... )
 
 
 
-
 /** Function is callback for cordova call of
- 
- *         cordova.exec(success, failInternal, "IntelSecurity", "SecureStorageWrite", [defaults.id, defaults.storageType,defaults.data, defaults.tag, defaults.appAccessControl, defaults.deviceLocality, defaults.sensitivityLevel, defaults.creator, defaults.owners]);
- 
+ *         cordova.exec(success, failInternal, "IntelSecurity", "SecureStorageWrite", [defaults.id, defaults.storageType, defaults.instanceID]);
  * @param [in] command - array of parameters, passed by Cordova runtime.
- 
  * @return nothing; result is passed to callback using self.commandDelegate
- 
  */
-
 - (void) SecureStorageWrite:(CDVInvokedUrlCommand *)command
-{
-	//Check input parameter. Probably not necessary
-    if( ![self checkArguments:command argNumber:13])
-	{
-        XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR ) ;
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-	}
-    
-	//this call will move the rest of the procedure to another thread
-    [self.commandDelegate runInBackground:^{
-        sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
-        //Retrieve all necessary parameters.
-        NSString *storageId = [command.arguments objectAtIndex:0];
-        NSInteger storageType = [self getIntFromArgument: command argNumber: 1 ];
-        sservice_data_handle_t extraKey= 0;
-        NSString *dataStr = NULL;
-        NSString *tagStr  = NULL;
-        NSInteger appAccessControl= 0;
-        NSInteger deviceLocality= 0;
-        NSInteger sensitivityLevel = 0;
-        NSInteger creator= 0;
-        NSInteger noStore= 0;
-        NSInteger noRead= 0;
-        NSArray *owners= NULL;
-        NSString *trustedWebDomainsStr = NULL ;
-        
-        if( command )
-        {
-            dataStr = [command.arguments objectAtIndex:2];
-            tagStr = [command.arguments objectAtIndex:3];
-            extraKey = [self getHandleFromArgument: command argNumber: 4 ];
-            appAccessControl= [ self getIntFromArgument:command argNumber:5 ];
-            deviceLocality= [ self getIntFromArgument:command argNumber: 6 ];
-            sensitivityLevel = [self getIntFromArgument:command argNumber: 7 ];
-            noStore = [ self getIntFromArgument:command argNumber:8 ];
-            noRead = [ self getIntFromArgument:command argNumber:9 ];
-            creator= [self getIntFromArgument:command argNumber: 10 ];
-            owners= [command.arguments objectAtIndex:11];
-            trustedWebDomainsStr = [command.arguments objectAtIndex:12	];
-            
-            if(!dataStr || !owners)
-            {
-                res = SSERVICE_ERROR_INVALIDPOINTER ;
-                XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, error 0x%x", __FUNCTION__, res  ) ;
-            }
-        }
-        
-        //Convert all parameters for C code types
-        unsigned long owners_num  = 0;
-        sservice_persona_id_t *owners_list = NULL ;
-        if( IS_SUCCESS(res))
-        {
-            owners_num = [owners count ];
-            owners_list = calloc( sizeof( sservice_persona_id_t), owners_num) ;
-            if(!owners_list)
-            {
-                res = SSERVICE_ERROR_INSUFFICIENTMEMORY ;
-                XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, error 0x%x", __FUNCTION__, res  ) ;
-            }
-            else
-            {
-                for( int i = 0; i < owners_num; i++)
-                    owners_list[i] = [[owners objectAtIndex:i] integerValue]  ;
-            }
-        }
-        NSData *data = NULL ;
-        if( IS_SUCCESS(res))
-        {
-            data = [dataStr dataUsingEncoding:STRING_ENCODING ];
-            if(!data)
-            {
-                XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INVALIDPOINTER ) ;
-                res = SSERVICE_ERROR_INVALIDPOINTER ;
-            }
-        }
-        
-        //Call runtime to performe action
-        if( IS_SUCCESS(res))
-        {
-            NSData *tag = nil ;
-            if(tagStr)
-            {
-                tag =  [tagStr dataUsingEncoding:STRING_ENCODING ];
-            }
-            sservice_secure_data_policy_t access_policy ;
-            access_policy.device_policy = (sservice_locality_type_t)deviceLocality;
-            access_policy.application_policy = (sservice_application_access_control_type_t) appAccessControl ;
-            access_policy.sensitivity_level = sensitivityLevel ;
-            access_policy.flags.no_store = noStore;
-            access_policy.flags.no_read = noRead;
-            
-            XSSLOG_BRIDGE(LOG_INFO, "Entering to %s, storageID: %p, type: %d", __FUNCTION__, storageId, storageType) ;
-            res = sservice_securestorage_write( [storageId UTF8String],
-                                               (sservice_secure_storage_type_t)storageType,
-                                               (sservice_size_t)[data length],
-                                               [data bytes ],
-                                               tag ? (sservice_size_t)[tag length]:0,
-                                               tag ? [tag bytes ]:NULL,
-                                               extraKey, &access_policy, creator,
-                                               (sservice_size_t)owners_num, owners_list,
-                                               authentication_token,
-                                               trustedWebDomainsStr ? [trustedWebDomainsStr cStringUsingEncoding:NSUTF8StringEncoding ] :NULL
-                                               );
-        }
-        
-        //Prepare callback parameters and execute necessary callback.
-        CDVPluginResult *pluginResult = NULL ;
-        if( IS_FAILED(res) )
-        {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                                messageAsInt:res.error_or_warn_code];
-        }
-        else
-        {
-            XSSLOG_BRIDGE(LOG_INFO, "Exiting from %s, Success", __FUNCTION__ ) ;
-            pluginResult = [ CDVPluginResult resultWithStatus: CDVCommandStatus_OK ];
-        }
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    }];
-}
-
-
-
-
-
-
-
-/** Function is callback for cordova call of
- *         cordova.exec(success, failInternal, "IntelSecurity", "SecureStorageWriteSecureData", [defaults.id, defaults.storageType, defaults.instanceID]);
- * @param [in] command - array of parameters, passed by Cordova runtime.
- * @return nothing; result is passed to callback using self.commandDelegate
- */
-- (void) SecureStorageWriteSecureData:(CDVInvokedUrlCommand *)command
 {
     if( ![self checkArguments:command argNumber:3])
 	{
@@ -1021,7 +881,7 @@ static inline void DoNothing(char const * formatStr, ... )
         XSSLOG_BRIDGE(LOG_INFO, "Entering to %s, storageID: %p, type: %d, data %d", __FUNCTION__, storageId, storageType, data_handle ) ;
         
         //Prepare callback parameters and execute necessary callback.
-        res = sservice_securestorage_write_securedata(
+        res = sservice_securestorage_write(
                                         [storageId UTF8String],
                                         (sservice_secure_storage_type_t)storageType,
                                         data_handle ) ;

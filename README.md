@@ -9,7 +9,7 @@ For more information please visit our API documentation @ https://software.intel
 
 How to use the plugin
 =====================
-This example is for Android but applicable for iOS and Windows 8
+This example is for Android but applicable for iOS and Windows
 	1. Create a new Cordova project
 		Cordova create AppDir com.intel.security AppDir
 
@@ -49,7 +49,7 @@ Cordova 3.5.0 windows 8 build flow
 		os : windows8 only
 	   (i.e. node.exe ChooseArch_Win8.js windows8 x64 CordovaApp.jsproj CordovaApp.sln)
 
-Cordova 4.1.2 windows build flow
+Cordova 4.1.2/5.1.1 windows build flow
     To overcome some gaps/issues with native library build in Windows 8 we
 	 provide a workaround script (ChooseArch_*.js) that you should use before
 	 step 7 (build the project).

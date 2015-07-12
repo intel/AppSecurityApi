@@ -282,52 +282,13 @@ sservice_result_t sservice_securestorage_read
 * @see sealed_data 
 * @return sservice_result_t, indicating success/failure error code.
 */
-sservice_result_t sservice_securestorage_write_securedata
+sservice_result_t sservice_securestorage_write
 	(
 	IN  const sservice_string_t id,
 	IN  sservice_secure_storage_type_t type,
 	IN  sservice_data_handle_t data_handle
 	);
 
-
-/** Function  creates and stores secure data to persistent media. Data is written in clear text
-* @param [in] id- parameter, identifying the storage medium( name of file )
-* @param [in] type - parameter, identifying the storage medium ( type, file/cloud/etc )
-* @param [in] data_size - size of data to add to secure data object
-* @param [in] data - data to add to secure data object
-* @param [in] tag_size- size of tag to attach to secure data object
-* @param [in] tag - tag to attach to secure data object
-* @param [in] access_policy - policy to attach to secure data object
-* @param [in] creator - creator persona 
-* @param [in] number_of_owners - number of data owners
-* @param [in] owners - list f data owners
-* @param [in] authentication_token - token authenticating the application
-* @param [out] data_handle - return value: handle that references created data object
-* @see  
-* @see  sservice_secure_data_policy_t
-* @see  sservice_persona_id_t 
-* @see  sservice_size_t 
-* @see  sservice_persona_id_t,
-* @see  sservice_authentication_token_t 
-* @see  sservice_data_handle_t
-* @return sservice_result_t, indicating success/failure error code.
-*/
-sservice_result_t sservice_securestorage_write
-	(
-	IN  const sservice_string_t id,
-	IN  sservice_secure_storage_type_t type,
-	IN  sservice_size_t data_size,
-	IN  const char* data,
-	IN  sservice_size_t tag_size,
-	IN  const char* tag,
-	IN	sservice_handle_t extra_key,
-	IN  sservice_secure_data_policy_t* access_policy,
-	IN  sservice_persona_id_t creator,
-	IN  sservice_size_t number_of_owners,
-	IN  sservice_persona_id_t* owners,
-	IN  sservice_authentication_token_t authentication_token,
-	IN  const char*						trusted_web_domains
-	);
 
 /** Function deletes secure storage from persistent media.
 * @param [in] id- parameter, identifying the storage medium( name of file )

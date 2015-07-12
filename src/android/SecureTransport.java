@@ -26,9 +26,6 @@ import java.io.UnsupportedEncodingException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
-
-
 public class SecureTransport {
 
 	protected native int openJNI(String url, int method, String serverKey,
@@ -51,15 +48,12 @@ public class SecureTransport {
 	public long OpenAPI(String url, int method, String serverKey,
 			int timeout) throws ErrorCodeException {
 
-		Log.d("SEAL_ROCK", "in  OpenAPI:");
 		// create array to get instanceID as a result in array 
 		final int instanceIDArraySize = 1; 
 		long[] instanceIDArray = new long[instanceIDArraySize];
 		
-		Log.d("SEAL_ROCK", "method = "+method);
 		int result = openJNI(url, method, serverKey, timeout, 
 				instanceIDArraySize, instanceIDArray);
-		Log.d("SEAL_ROCK", "result = "+result);
 		if (result != 0) {            
 			throw new ErrorCodeException(result);
 		}

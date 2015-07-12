@@ -46,12 +46,12 @@ copyFilesIntoProject();
 var projectFile = 'CordovaApp.Windows80.jsproj';
 var solutionFile = 'CordovaApp.vs2012.sln';
 defineArchSLN(solutionFile);
-fixProjFile(projectFile);
+addRuntimedependencyRef(projectFile);
 // fix windows8.1
 projectFile = 'CordovaApp.Windows.jsproj';
 solutionFile = 'CordovaApp.sln';
 defineArchSLN(solutionFile);
-fixProjFile(projectFile);
+addRuntimedependencyRef(projectFile);
 console.log("Fixed!");	
 
 function copyFilesIntoProject(){
@@ -60,31 +60,19 @@ function copyFilesIntoProject(){
 	var srcPath = '../../plugins/com.intel.security/src/windows8/libs/'+archName+'/';
 	var dstPath = 'plugins/com.intel.security/';
 	var dllFilesName = ['IntelSecurityServicesWRC.dll', 'IntelSecurityServicesWRC.winmd'];
-	var intelFilesName = ['IntelSecurityServicesWRC.sb', 'sr_agent.vp'];
 	
 	for (var i =0; i < dllFilesName.length;i++){
 		var file = dllFilesName[i];
-		//console.log('file ===== '+file);
 		copyFile(srcPath+file, dstPath+file);
-	}
-	
-	if ((archName == 'x86') ||(archName == 'x64')){
-		for (var i =0; i < intelFilesName.length;i++){
-			var file = intelFilesName[i];
-			copyFile(srcPath+file, dstPath+file);
-		}
 	}
 }
 
 
 function copyFile(sourceFile, targetFile) {
-	//console.log('copyFile: sourceFile = '+sourceFile+', targetFile = '+targetFile);
 	if (fs.existsSync(sourceFile)) {
 		if(fs.existsSync(targetFile)) {
-			//console.log("removing old "+targetFile);
 			fs.unlinkSync(targetFile);
 		}
-		//console.log("copying "+sourceFile+" to "+targetFile);
 		fs.createReadStream(sourceFile).pipe(fs.createWriteStream(targetFile));
 	} else  {
 		console.log('error:, '+sourceFile+' does not exist. Exiting');
@@ -94,50 +82,20 @@ function copyFile(sourceFile, targetFile) {
 
 
 function defineArchSLN(fileName) {
-	//console.log("defineArchSLN: file= "+fileName);
 	fs.readFile(fileName,'utf8', 	
 		function (err, data) {
-			//console.log("Fixing "+fileName+" file");
-			if (!err) {			
-				//console.log("Fixing "+fileName+" file");
+			if (!err) {
 				var newData=data.replace(/({[\dA-F\-]*}.(Debug|Release)\|.*\s=\s(Debug|Release))\|Any CPU/g,"$1|"+archName);
 				fs.writeFileSync(fileName, newData);
 			}
 		});
 }
-
-function defineArchProject(fileName) {
-	//console.log("defineArchProject: file= "+fileName);
-	// open project file for defining the architecture
-	fs.readFile(fileName,'utf8', 
+function addRuntimedependencyRef(fileName) {
+	fs.readFile(fileName,'utf8', 	
 		function (err, data) {
-			if (!err) {			
-				//console.log("Fixing "+fileName+" file");
-				var newData=data.replace('<Platform Condition= $(Platform) == >AnyCPU</Platform>','<Platform Condition= $(Platform) ==  >'+archName+'<//Platform>');
-				newData=newData.replace(/Bin\\(x86|x64|ARM)\\/g,'Bin\\');
-				
-				newData=newData.replace('<Platform>AnyCPU</Platform>','<Platform>'+archName+'</Platform>');
+			if (!err) {
+				var newData=data.replace(" <SDKReference","<SDKReference Include=\"Microsoft.VCLibs, Version=11.0\" /> \n <SDKReference ");
 				fs.writeFileSync(fileName, newData);
 			}
 		});
 }
-
-function fixProjFile(fileName) {
-	fs.readFile(fileName,'utf8', 
-		function (err, data) {            
-			if (!err) {			
-				if (data.indexOf('IntelSecurityServicesWRC.sb') == -1) {
-				    //console.log("Fixing resources");
-				    var newData=data.replace(
-					    "</ItemGroup>",
-					    '</ItemGroup>\n\t<ItemGroup Condition="$(Platform)==\'x86\' or $(Platform)==\'x64\'" >\n\t\t<Content Include="plugins\\com.intel.security\\IntelSecurityServicesWRC.sb" />\n\t\t<Content Include="plugins\\com.intel.security\\sr_agent.vp" />\n\t</ItemGroup>'
-				    );
-				    fs.writeFileSync(fileName, newData);
-				}
-			} else {
-				console.log('error in fixProjFile');                
-			}
-		});
-}
-
-

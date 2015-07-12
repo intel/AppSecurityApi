@@ -22,8 +22,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
 package com.intel.security;
 
-//import android.util.Log;
-
 public class ErrorCodeException extends Exception {
     
     private int errorCode;

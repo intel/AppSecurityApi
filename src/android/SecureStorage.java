@@ -30,11 +30,7 @@ import org.json.JSONException;
 public class SecureStorage {
 
     protected native int readJNI(String id, int storageType, long extraKey, int instanceIDArraySize, /*OUT*/ long[] instanceIDArray);
-	protected native int writeJNI(String id, int storageType,int dataSize, byte[] data, int tagSize, byte[] tag, 
-            long extraKey, int appAccessControl, int deviceLocality, int sensitivityLevel, int noStore, int noRead, long creatorUID, int numberOfOwners, 
-            long[] owners, long authenticationToken, String webDomainsList);   
-    
-	protected native int writeSecureDataJNI(String id, int storageType, long instanceID);    
+	protected native int writeJNI(String id, int storageType, long instanceID);    
     protected native int deleteJNI(String id, int storageType);
    
     final protected String dataEncoding = "UTF-16LE";
@@ -54,44 +50,16 @@ public class SecureStorage {
         return instanceID;
     }
     
-    public void WriteAPI(String id, int storageType, String dataStr, String tagStr, long extraKey, int appAccessControl, int deviceLocality,
-            int sensitivityLevel, int noStore, int noRead, long creator, JSONArray ownersUIDJSONArray, String trustedWebDomains) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
+    public void WriteAPI(String id, int storageType, long dataHandle) throws ErrorCodeException {
 
-        // convert data to byte[]
-        byte[] data = dataStr.getBytes(dataEncoding);
-
-        // convert tag to byte[]        
-        byte[] tag = tagStr.getBytes(dataEncoding);
-
-        // convert ownersUIDJSONArray to long[]
-        long[] owners = new long[ownersUIDJSONArray.length()];
-        for (int i = 0; i<ownersUIDJSONArray.length(); i++ )
-        {
-            owners[i] = (long)ownersUIDJSONArray.getLong(i);
-        }
- 
-        final long authenticationToken = 0; //place holder for next version
-		int result = writeJNI(id, storageType, data.length, data, tag.length, tag, extraKey,
-                appAccessControl, deviceLocality, sensitivityLevel, noStore, noRead, creator, ownersUIDJSONArray.length(), owners, 
-                authenticationToken, trustedWebDomains);
+        int result = writeJNI(id, storageType, dataHandle);
         if (result != 0) {            
             throw new ErrorCodeException(result);
         }
         
         return;
     }
-	
-	  public void WriteSecureDataAPI(String id, int storageType, long dataHandle) throws ErrorCodeException {
-
-        int result = writeSecureDataJNI(id, storageType, dataHandle);
-        if (result != 0) {            
-            throw new ErrorCodeException(result);
-        }
-        
-        return;
-    }
-	
-    
+	    
     public void DeleteAPI(String id, int storageType) throws ErrorCodeException {
 
         int result = deleteJNI(id, storageType);

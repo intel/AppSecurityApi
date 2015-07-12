@@ -39,7 +39,6 @@ public enum SecureAPIEnum {
     // Secure Storage
     SECURE_STORAGE_READ_STRING("SecureStorageRead"),
     SECURE_STORAGE_WRITE_STRING("SecureStorageWrite"),
-    SECURE_STORAGE_WRITE_SECURE_DATA_STRING("SecureStorageWriteSecureData"),    
     SECURE_STORAGE_DELETE_STRING("SecureStorageDelete"),
     // Secure Transport
     SECURE_TRANSPORT_OPEN_STRING("SecureTransportOpen"),

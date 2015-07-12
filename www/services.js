@@ -435,7 +435,7 @@ var _secureStorage = {
                 [defaults.id, defaults.storageType, defaults.extraKey]);                 
         }
     },
-    writeSecureData: function (success, fail, options) {
+    write: function (success, fail, options) {
         options = options || {};
         var defaults = {
             id:             '',
@@ -458,59 +458,9 @@ var _secureStorage = {
                     failInternal(code, fail);
                 }, 
                 'IntelSecurity', 
-                'SecureStorageWriteSecureData', 
+                'SecureStorageWrite', 
                 [defaults.id, defaults.storageType, defaults.instanceID]);
         }
-    },
-    write: function (success, fail, options) {
-        options = options || {};
-        var defaults = {
-            id:                 '',
-            storageType:        0,
-            data:               '',
-            tag:                '',
-            webOwners:  	    '',
-            extraKey:           0,
-            appAccessControl:   0,
-            deviceLocality:     0,
-            sensitivityLevel:   0,
-            noStore:            false,
-            noRead:             false,
-            creator:            0,
-            owners:             [0]
-        };
-        for (var key in defaults) {
-            if (options[key] !== undefined) {
-                defaults[key] = options[key];
-            }
-        }
-        // check input type
-        if (
-            (typeof defaults.id !== 'string')                               ||
-            (!isValidNonNegativeSafeInteger(defaults.storageType))          ||
-            (typeof defaults.data !== 'string')                             ||
-            (typeof defaults.tag !== 'string')                              ||
-            (typeof defaults.webOwners !== 'string')                	    ||
-            (!isValidNonNegativeSafeInteger(defaults.extraKey))             ||
-            (!isValidNonNegativeSafeInteger(defaults.appAccessControl))     ||
-            (!isValidNonNegativeSafeInteger(defaults.deviceLocality))       ||
-            (!isValidNonNegativeSafeInteger(defaults.sensitivityLevel))     ||
-            (!isBoolean(defaults.noStore))                                  ||
-            (!isBoolean(defaults.noRead))                                   ||
-            (!isValidNonNegativeSafeInteger(defaults.creator))              ||
-            (!isValidNonNegativeSafeIntegersArray(defaults.owners))) {
-            failInternal('Argument type inconsistency detected', fail);
-        } else {
-            cordova.exec(
-                success,
-                function(code){
-                    failInternal(code, fail);
-                },
-                'IntelSecurity', 
-                'SecureStorageWrite', 
-                [defaults.id, defaults.storageType, defaults.data, defaults.tag, defaults.extraKey, defaults.appAccessControl, defaults.deviceLocality, defaults.sensitivityLevel,
-                       Number(defaults.noStore), Number(defaults.noRead), defaults.creator, defaults.owners,defaults.webOwners ]);
-        }                
     },
     delete: function (success, fail, options) { 
         options = options || {};

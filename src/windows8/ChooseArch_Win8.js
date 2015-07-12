@@ -144,60 +144,7 @@ function copyFiles()
 	{
 		console.log("IntelSecurityServicesWRC.winmd does not exist. Exiting");
 		process.exit(1);
-	}
-    
-	
-    if ((archName == 'x86') ||(archName == 'x64')){
-        sourceFile='../../plugins/com.intel.security/src/'+platform+'/libs/'+archName+'/IntelSecurityServicesWRC.sb';
-        targetFile=null;
-        if(platform=='windows8')
-        {
-            targetFile='plugins/com.intel.security/IntelSecurityServicesWRC.sb';
-        }
- 
-        if (fs.existsSync(sourceFile))
-        {
-            if(fs.existsSync(targetFile))
-            {
-                console.log("Removing old IntelSecurityServicesWRC.sb");
-                fs.unlinkSync(targetFile);
-            }
-            console.log("Copying IntelSecurityServicesWRC.sb file for architecture: "+archName);
-            fs.createReadStream(sourceFile).pipe(fs.createWriteStream(targetFile));
-            
-        }
-        else 
-        {
-            console.log("IntelSecurityServicesWRC.sb does not exist. Exiting");
-            process.exit(1);
-        }
-        
-        sourceFile='../../plugins/com.intel.security/src/'+platform+'/libs/'+archName+'/sr_agent.vp';
-        targetFile=null;
-        if(platform=='windows8')
-        {
-            targetFile='plugins/com.intel.security/sr_agent.vp';
-        }
- 
-        if (fs.existsSync(sourceFile))
-        {
-            if(fs.existsSync(targetFile))
-            {
-                console.log("Removing old sr_agent.vp");
-                fs.unlinkSync(targetFile);
-            }
-            console.log("Copying sr_agent.vp file for architecture: "+archName);
-            fs.createReadStream(sourceFile).pipe(fs.createWriteStream(targetFile));
-            
-        }
-        else 
-        {
-            console.log("sr_agent.vp does not exist. Exiting");
-            process.exit(1);
-        }       
-    }
-    
-    
+	}    
 }
 
 
@@ -235,26 +182,6 @@ function defineArchProject(fileName)
 		});
 }
 
-function fixProjFile(fileName) {
-
-	fs.readFile(fileName,'utf8', 
-		function (err, data) {            
-			if (!err) {			
-                if (data.indexOf('IntelSecurityServicesWRC.sb') == -1)
-                {
-                    console.log("Fixing resources");
-                    var newData=data.replace(
-                            "</ItemGroup>",
-                            '</ItemGroup>\n\t<ItemGroup Condition="$(Platform)==\'x86\' or $(Platform)==\'x64\'" >\n\t\t<Content Include="plugins\\com.intel.security\\IntelSecurityServicesWRC.sb" />\n\t\t<Content Include="plugins\\com.intel.security\\sr_agent.vp" />\n\t</ItemGroup>'
-                    );
-                    fs.writeFileSync(fileName, newData);
-                }
-			} else {
-                console.log('error in fixProjitemsFile');                
-            }
-		});    
-}
-
 function fixDLLResourceIssue(fileName)
 {
 	//Opens project file for fixing the dll reference
@@ -268,6 +195,7 @@ function fixDLLResourceIssue(fileName)
 				if(platform=='windows8')
 				{
 					newData=data.replace('Content Include="plugins\\com.intel.security\\IntelSecurityServicesWRC.dll"','PRIResource Include="plugins\\com.intel.security\\IntelSecurityServicesWRC.dll"');
+					newData=newData.replace(" <SDKReference","<SDKReference Include=\"Microsoft.VCLibs, Version=11.0\" /> \n <SDKReference ");
 				}
 				if(platform=='wp')
 				{
@@ -278,10 +206,7 @@ function fixDLLResourceIssue(fileName)
 				{
 					defineArchProject(fileName);
 				}
-                
-                fixProjFile(fileName);
 			}
 		});
 }
-
 

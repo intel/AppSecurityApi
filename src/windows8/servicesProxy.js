@@ -531,47 +531,9 @@ var secureStorage = {
     },
 
     SecureStorageWrite: function (success, fail, optionsArray) {
-        if ((optionsArray instanceof Array) && (optionsArray.length == 13)) {
-            try {
-
-                var id = optionsArray[0];
-                var storageType = optionsArray[1];
-                var data = optionsArray[2];
-                var tag = optionsArray[3];
-                var extraKey = optionsArray[4];
-                var appAccessControl = optionsArray[5];
-                var deviceLocality = optionsArray[6];
-                var sensitivityLevel = optionsArray[7];
-                var noStore = optionsArray[8];
-                var noRead = optionsArray[9];
-                var creator = optionsArray[10];
-                var owners = optionsArray[11];
-                var webDomains = optionsArray[10];
-
-                var returnCode = IntelSecurityServicesWRC.SecureStorageWRC.secureStorageWriteWRC(id, storageType, data, tag,
-                    extraKey, appAccessControl, deviceLocality, sensitivityLevel, noStore, noRead, creator, owners, 0, webDomains);
-				data = null;        //hint to the GC
-                if (returnCode === 0) {
-                    success();
-                }
-                else {
-                    fail(returnCode);
-                }
-            }
-            catch (e) {
-                fail(ErrorCodes["Internal error occurred"]);
-            }
-        }
-        else {
-            fail(ErrorCodes["Internal error occurred"]);
-        }
-    },
-
-
-    SecureStorageWriteSecureData: function (success, fail, optionsArray) {
         if ((optionsArray instanceof Array) && (optionsArray.length == 3)) {
             try {
-                var returnCode = IntelSecurityServicesWRC.SecureStorageWRC.secureStorageWriteSecureDataWRC(optionsArray[0], optionsArray[1], optionsArray[2]);
+                var returnCode = IntelSecurityServicesWRC.SecureStorageWRC.secureStorageWriteWRC(optionsArray[0], optionsArray[1], optionsArray[2]);
                 if (returnCode === 0) {
                     success();
                 }
@@ -849,10 +811,6 @@ module.exports = {
     SecureStorageWrite: function (success, fail, option) {
 
         secureStorage.SecureStorageWrite(success, fail, option);
-    },
-    SecureStorageWriteSecureData: function (success, fail, option) {
-
-        secureStorage.SecureStorageWriteSecureData(success, fail, option);
     },
     SecureStorageDelete: function (success, fail, option) {
 

@@ -128,10 +128,12 @@ var secureData = {
                 var decodedString = "";
                 try {
                     decodedString = window.atob(optionsArray[0]);
+                    
                 }
                 catch (e) {
                     // sealedData is not in base64 format -- invalid sealedData
                     fail(ErrorCodes["Data integrity violation detected"]);
+                    return;
                 }
                 var uintArray = decodedString.split(",");
                 var i = 0;
@@ -148,6 +150,11 @@ var secureData = {
                 }
 
                 for (i = 0; i < uintArray.length; i++) {
+                    if(isNaN(uintArray[i]))
+                    {
+                        fail(ErrorCodes["Data integrity violation detected"]);
+                        return;
+                    }
                     uintArray[i] = parseInt(uintArray[i]);
                 }
 
@@ -844,4 +851,5 @@ module.exports = {
 
 //Namespace of the bridge
 require("cordova/exec/proxy").add("IntelSecurity", module.exports);
+
 

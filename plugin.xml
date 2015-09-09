@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="com.intel.security"
     version="1.3.0">
-    <name>Intel Security Services plugin</name>
+    <name>App Security API</name>
     <description>Intel Security Services Plugin</description>
     <license></license>
     <keywords>Intel,intel.security,intel.security.Services,Security Services</keywords>

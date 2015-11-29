@@ -23,7 +23,8 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 package com.intel.security;
 
 public enum SecureAPIEnum {
-        
+	//Init
+    GLOBAL_INIT("GlobalInit"),
     // Secure Data
     SECURE_DATA_CREATE_FROM_DATA("SecureDataCreateFromData"),
     SECURE_DATA_CREATE_FROM_SEALED_DATA("SecureDataCreateFromSealedData"),
@@ -44,8 +45,9 @@ public enum SecureAPIEnum {
     SECURE_TRANSPORT_OPEN_STRING("SecureTransportOpen"),
     SECURE_TRANSPORT_SET_URL_STRING("SecureTransportSetURL"),
     SECURE_TRANSPORT_SET_METHOD_STRING("SecureTransportSetMethod"),
-    SECURE_TRANSPORT_SET_HEADER_VALUE_STRING("SecureTransportSetHeaderValue"),
+    SECURE_TRANSPORT_SET_HEADERS_STRING("SecureTransportSetHeaders"),
     SECURE_TRANSPORT_SEND_REQUEST_STRING("SecureTransportSendRequest"),
+	SECURE_TRANSPORT_ABORT_STRING("SecureTransportAbort"),
     SECURE_TRANSPORT_DESTROY_STRING("SecureTransportDestroy");
     
     
@@ -56,6 +58,14 @@ public enum SecureAPIEnum {
     public String GetValue(){
         return this.functionName;
     }
+    
+    static public boolean IsGlobalInitAPI(String functionName)throws ErrorCodeException{
+        
+        SecureAPIEnum api = SecureAPIEnum.CreateSecureAPIEnum(functionName); 
+        return api.GetValue().equals(SecureAPIEnum.GLOBAL_INIT.GetValue());
+    }
+    
+    /*
     static public boolean IsSupportedAPI(String functionName){
         
         for (SecureAPIEnum api : SecureAPIEnum.values()) {
@@ -67,6 +77,7 @@ public enum SecureAPIEnum {
         // did not match any API
         return false;        
     }
+    */
     
     static public SecureAPIEnum CreateSecureAPIEnum(String functionName) throws ErrorCodeException{
         

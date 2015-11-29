@@ -30,7 +30,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 };
 
 
-
+- (void) GlobalInit:(CDVInvokedUrlCommand *)command;
 - (void) SecureDataCreateFromData:(CDVInvokedUrlCommand *)command;
 - (void) SecureDataCreateFromSealedData:(CDVInvokedUrlCommand *)command;
 - (void) SecureDataGetData:(CDVInvokedUrlCommand *)command;
@@ -48,11 +48,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 - (void) SecureTransportOpen:(CDVInvokedUrlCommand *)command;
 - (void) SecureTransportSetURL:(CDVInvokedUrlCommand *)command;
 - (void) SecureTransportSetMethod:(CDVInvokedUrlCommand *)command;
-- (void) SecureTransportSetHeaderValue:(CDVInvokedUrlCommand *)command;
+- (void) SecureTransportSetHeaders:(CDVInvokedUrlCommand *)command;
 - (void) SecureTransportSendRequest:(CDVInvokedUrlCommand *)command;
+- (void) SecureTransportAbort:(CDVInvokedUrlCommand *)command;
 - (void) SecureTransportDestroy:(CDVInvokedUrlCommand *)command;
 
 
 
 
 @end
+

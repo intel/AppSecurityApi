@@ -31,13 +31,35 @@ import org.apache.cordova.CallbackContext;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.content.res.AssetManager;
+import java.io.InputStream;
+import java.io.IOException;
 
 import android.content.Context;
 import android.provider.Settings;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
 public class Services extends CordovaPlugin {
   
+	protected static final int CONFIG_ID_APP_PATH = 0x100 ;
+	protected static final int CONFIG_ID_LOCAL_PATH= 0x101 ;
+	protected static final int CONFIG_ID_APP_ID= 0x102 ;
+	protected static final int CONFIG_ID_HARDWARE_ID= 0x103 ; 
+	protected static final int CONFIG_ID_OS_VERSION= 0x104 ;
+    protected static final int CONFIG_ID_WHITELIST_ACCESS_MIN = 0xD000;
+    protected static final int CONFIG_ID_WHITELIST_ACCESS_MAX = 0xDFFF;
+    protected static final int CONFIG_ID_WHITELIST_SUBDOMAINS_MIN = 0xE000;
+    protected static final int CONFIG_ID_WHITELIST_SUBDOMAINS_MAX = 0xEFFF;
+	protected static final int CONFIG_ID_CACERT_MIN = 0xF000;
+	protected static final int CONFIG_ID_CACERT_MAX = 0xFF00;
+
 	protected native int SetClassPtrToJni();
+    protected native int globalInitStartJNI() ;
+    protected native int globalInitEndJNI() ;
+	protected native int globalSetConfigJNI( int jID, Object jData) ;
+	
     static Context mContext = null ;
 	
     private static Services instance = null;
@@ -65,21 +87,157 @@ public class Services extends CordovaPlugin {
             System.exit(1); 
         }                
     }
+    public void GlobalInitStart() throws ErrorCodeException{		
+        int result = globalInitStartJNI() ;
+        if (result != 0) {            
+            throw new ErrorCodeException(result);
+        }   
+    }
 
+    public void GlobalInitEnd() throws ErrorCodeException{
+		Context mContext=cordova.getActivity() ;        
+        int result = 0;        
+		result = globalSetConfigJNI(CONFIG_ID_LOCAL_PATH, (Object)(mContext.getFilesDir().toString())) ;
+        if (result != 0) {            
+            throw new ErrorCodeException(result);
+        }
+		result = globalSetConfigJNI(CONFIG_ID_APP_PATH, (Object)mContext.getApplicationInfo().dataDir) ;
+        if (result != 0) {            
+            throw new ErrorCodeException(result);
+        }
+		result = globalSetConfigJNI(CONFIG_ID_APP_ID, (Object)mContext.getPackageName() ) ;
+        if (result != 0) {            
+            throw new ErrorCodeException(result);
+        }
+		result = globalSetConfigJNI(CONFIG_ID_HARDWARE_ID, (Object)Settings.Secure.getString(mContext.getContentResolver(),Settings.Secure.ANDROID_ID)) ;
+        if (result != 0) {            
+            throw new ErrorCodeException(result);
+        }
+		result = globalSetConfigJNI(CONFIG_ID_OS_VERSION, (Object)( new Integer(android.os.Build.VERSION.SDK_INT))) ;
+        if (result != 0) {            
+            throw new ErrorCodeException(result);
+        }		
+		try {			
+	        // whitelist
+			int id = mContext.getResources().getIdentifier("config", "xml", mContext.getPackageName());				
+			XmlPullParser xpp = mContext.getResources().getXml(id);
+				 
+            int access_id = CONFIG_ID_WHITELIST_ACCESS_MIN;
+            int subdomains_id = CONFIG_ID_WHITELIST_SUBDOMAINS_MIN;
+			int eventType = xpp.getEventType();
+			while ((eventType != XmlPullParser.END_DOCUMENT) &&
+                    (access_id <= CONFIG_ID_WHITELIST_ACCESS_MAX)) {
+				if(eventType == XmlPullParser.START_TAG) {
+
+                    String origin = "";
+                    String subdomains = "";
+					if (xpp.getName().equals("access")){							
+						for (int i = 0; i < xpp.getAttributeCount(); i++){
+							if ( xpp.getAttributeName(i).equals("origin")) {									
+								origin = xpp.getAttributeValue(i);
+							} else if (xpp.getAttributeName(i).equals("subdomains")) {
+								subdomains = xpp.getAttributeValue(i);
+							}
+						}
+
+						eventType = xpp.next();
+						if ((eventType == XmlPullParser.END_TAG) &&
+							(!origin.equals("")) ) {
+							result = globalSetConfigJNI(access_id, (Object)origin ) ;
+                            if (result != 0) {            
+                                throw new ErrorCodeException(result);
+                            }
+                            if (!subdomains.equals("")){                            
+                                result = globalSetConfigJNI(subdomains_id, (Object)subdomains ) ;
+                                if (result != 0) {            
+                                    throw new ErrorCodeException(result);
+                                }
+                            }
+                            access_id++;
+                            subdomains_id++;
+                        }						
+					}
+				}					
+				eventType = xpp.next();                
+            }	            
+
+			/*
+            // CA-CERT
+			AssetManager assetManager = mContext.getAssets();
+			String[] list = assetManager.list("cacerts");
+			int i = 0;
+			for (String str : list)
+			{
+				InputStream input = assetManager.open("cacerts/"+str);
+				int size = input.available();
+				byte[] buffer = new byte[size];
+				input.read(buffer);
+				result = globalSetConfigJNI( CONFIG_ID_CACERT_MIN+i, (Object)buffer ) ;
+                if (result != 0) {            
+                    throw new ErrorCodeException(result);
+                }
+				i++ ;
+			}
+			*/
+        } catch (XmlPullParserException e){
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+		} catch (IOException e){
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+		} catch (Exception e) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+        }		
+        result = globalInitEndJNI() ;
+        if (result != 0) {            
+            throw new ErrorCodeException(result);
+        }   
+    }
     
     @Override
     public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
-        
-        if (SecureAPIEnum.IsSupportedAPI(action)) {
-            
+     
+        try {
+            if (SecureAPIEnum.IsGlobalInitAPI(action)) {
+                // global init
+                try {
+                    GlobalInitStart();
+                    cordova.getThreadPool().execute(new Runnable() {
+                        public void run() {                
+                            try {
+                                SetSserviceContext();
+                                if (SetClassPtrToJni() == 0)
+                                {
+                                    throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+                                }                                                          
+                                GlobalInitEnd();
+                            } catch (ErrorCodeException e){                            
+                                callbackContext.error(e.getErrorCode());
+                            } catch (OutOfMemoryError e){
+                                callbackContext.error(ErrorCodeEnum.MEMORY_ALLOCATION_FAILURE.getValue());
+                            } catch (Exception e) {
+                                callbackContext.error(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+                            }
+                        }
+                    });    
+                } catch (ErrorCodeException e){                            
+                    callbackContext.error(e.getErrorCode());
+                    return true;
+                } catch (OutOfMemoryError e){
+                    callbackContext.error(ErrorCodeEnum.MEMORY_ALLOCATION_FAILURE.getValue());
+                    return true;
+                } catch (Exception e) {
+                    callbackContext.error(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+                    return true;
+                }                
+            } else {
+                // API - use a working thread                
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {                
                         try {
-							SetSserviceContext();
-							if (SetClassPtrToJni() == 0)
-							{
-								throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
-							}
+                            SetSserviceContext();
+                            if (SetClassPtrToJni() == 0)
+                            {
+                                throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+                            }
                             SecureAPIEnum api = SecureAPIEnum.CreateSecureAPIEnum(action);
                             switch (api) {
                                 // Secure Data
@@ -90,8 +248,8 @@ public class Services extends CordovaPlugin {
                                     SecureDataCreateFromSealedDataExecute(args, callbackContext);
                                     break;                           
                                 case SECURE_DATA_CHANGE_EXTRA_KEY:
-                                	SecureDataChangeExtraKeyExecute(args, callbackContext);
-                                	break; 
+                                    SecureDataChangeExtraKeyExecute(args, callbackContext);
+                                    break; 
                                 case SECURE_DATA_GET_DATA_STRING:
                                     SecureDataGetDataExecute(args, callbackContext);
                                     break;
@@ -126,25 +284,29 @@ public class Services extends CordovaPlugin {
                                 case SECURE_STORAGE_DELETE_STRING:
                                     SecureStorageDeleteExecute(args, callbackContext);
                                     break;
+                                // Secure transport
                                 case SECURE_TRANSPORT_OPEN_STRING:
-                                	SecureTransportOpenExcute(args, callbackContext);
-                                	break;
+                                    SecureTransportOpenExcute(args, callbackContext);
+                                    break;
                                 case SECURE_TRANSPORT_SET_URL_STRING:
-                                	SecureTransportSetURLExcute(args, callbackContext);
+                                    SecureTransportSetURLExcute(args, callbackContext);
                                     break;
                                 case SECURE_TRANSPORT_SET_METHOD_STRING:
-                                	SecureTransportSetMethodExcute(args, callbackContext);
+                                    SecureTransportSetMethodExcute(args, callbackContext);
                                     break;
-                                case SECURE_TRANSPORT_SET_HEADER_VALUE_STRING:
-                                	SecureTransportSetHeaderValueExcute(args, callbackContext);
+                                case SECURE_TRANSPORT_SET_HEADERS_STRING:
+                                	SecureTransportSetHeadersExcute(args, callbackContext);
                                     break;
                                 case SECURE_TRANSPORT_SEND_REQUEST_STRING:
-                                	SecureTransportSendRequestExcute(args, callbackContext);
+                                    SecureTransportSendRequestExcute(args, callbackContext);
+                                    break;
+                                case SECURE_TRANSPORT_ABORT_STRING:
+                                    SecureTransportAbortExcute(args, callbackContext);
                                     break;
                                 case SECURE_TRANSPORT_DESTROY_STRING:
-                                	SecureTransportDestroyExcute(args, callbackContext);
+                                    SecureTransportDestroyExcute(args, callbackContext);
                                     break;
-							};
+                            };
                         } catch (ErrorCodeException e){                            
                             callbackContext.error(e.getErrorCode());
                         } catch (JSONException e){
@@ -156,16 +318,13 @@ public class Services extends CordovaPlugin {
                         }                        
                     }
                 });
-                return true;
-            } 
-            else 
-            {
-                // the action is not supported
-                //throw new ErrorCodeException(ErrorCode.INTERNAL_ERROR_OCCURRED);
-                return false;
-            }                                                         
-    }
-    
+            }
+        } catch (ErrorCodeException e){
+            // the action is not supported
+            return false;
+        }
+        return true;
+    }    
     
     protected void SecureDataCreateFromDataExecute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException, UnsupportedEncodingException {
         
@@ -370,14 +529,15 @@ public class Services extends CordovaPlugin {
     
     protected void SecureTransportSetURLExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
     	
-        if (args.length() != 2) {
+        if (args.length() != 3) {
             throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
         String url = args.getString(1);
+		String serverKey = args.getString(2);
         
         SecureTransport sTransport = new SecureTransport();
-        sTransport.SetURLAPI(instanceID, url);
+        sTransport.SetURLAPI(instanceID, url,serverKey);
         callbackContext.success();
     }
     
@@ -394,17 +554,16 @@ public class Services extends CordovaPlugin {
         callbackContext.success();
     }
     
-    protected void SecureTransportSetHeaderValueExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
+    protected void SecureTransportSetHeadersExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
     	
-        if (args.length() != 3) {
+        if (args.length() != 2) {
             throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
         }
         long instanceID = args.getLong(0);
-        String key = args.getString(1);
-        String value = args.getString(2);
+        String headers = args.getString(1);
         
         SecureTransport sTransport = new SecureTransport();
-        sTransport.SetHeaderValueAPI(instanceID, key, value);
+        sTransport.SetHeadersAPI(instanceID, headers);
         callbackContext.success();
     }
     
@@ -424,6 +583,18 @@ public class Services extends CordovaPlugin {
         callbackContext.success(responseObject);
     }
     
+	 protected void SecureTransportAbortExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
+    	
+        if (args.length() != 1) {
+            throw new ErrorCodeException(ErrorCodeEnum.INTERNAL_ERROR_OCCURRED.getValue());
+        }
+        long instanceID = args.getLong(0);
+        
+        SecureTransport sTransport = new SecureTransport();
+        sTransport.AbortAPI(instanceID);
+        callbackContext.success();
+    }
+	
     protected void SecureTransportDestroyExcute(final JSONArray args, final CallbackContext callbackContext) throws ErrorCodeException, JSONException {
     	
         if (args.length() != 1) {

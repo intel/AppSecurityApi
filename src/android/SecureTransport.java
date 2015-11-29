@@ -30,16 +30,17 @@ public class SecureTransport {
 
 	protected native int openJNI(String url, int method, String serverKey,
 			int timeout, int instanceIDArraySize, long[] instanceIDArray);
-	protected native int setURLJNI(long instanceID, String url);
+	protected native int setURLJNI(long instanceID, String url,String serverKey);
 	protected native int setMethodJNI(long instanceID, int method);
-	protected native int setHeaderValueJNI(long instanceID, String key, String value);
+	protected native int setHeadersJNI(long instanceID, String headers);
 	protected native int getResponseHeaderJNI(long instanceID, int responseHeaderSize,
 			byte[] responseHeaderBuffer);
 	protected native int getResponseBodyJNI(long instanceID, int responseBodySize,
 			byte[] responseBodyBuffer);
 	protected native int sendRequestJNI(long instanceID, String requestBody,
 			int requestFormat, String secureDataDescriptors,
-			int answerArraySize, int[] answerArray);
+			long[] httpArray, int answerArraySize, int[] answerArray);
+	protected native int abortJNI(long instanceID);
 	protected native int destroyJNI(long instanceID);
 
     final protected String dataEncoding = "UTF-16LE";
@@ -62,9 +63,9 @@ public class SecureTransport {
 		return instanceID;    
 	}
 
-	public void SetURLAPI(long instanceID, String url) throws ErrorCodeException {
+	public void SetURLAPI(long instanceID, String url,String serverKey) throws ErrorCodeException {
 
-		int result = setURLJNI(instanceID, url);
+		int result = setURLJNI(instanceID, url,serverKey);
 		if (result != 0) {            
 			throw new ErrorCodeException(result);
 		}
@@ -81,9 +82,9 @@ public class SecureTransport {
 
 		return;        
 	}
-	public void SetHeaderValueAPI(long instanceID, String key, String value) throws ErrorCodeException {
+	public void SetHeadersAPI(long instanceID, String headers) throws ErrorCodeException {
 
-		int result = setHeaderValueJNI(instanceID, key, value);
+		int result = setHeadersJNI(instanceID, headers);
 		if (result != 0) {            
 			throw new ErrorCodeException(result);
 		}
@@ -98,9 +99,10 @@ public class SecureTransport {
 		// create array to get dataSize as a result in array 
 		final int answerArraySize = 2; // [responseHeaderSize, responseBodySize]
 		int[] answerArray = new int[answerArraySize];
+		long[] httpArray=new long[1];
 
 		int result = sendRequestJNI(instanceID, requestBody, requestFormat, secureDataDescriptors, 
-				answerArraySize, answerArray);
+				httpArray,answerArraySize, answerArray);
 		if (result != 0) {            
 			throw new ErrorCodeException(result);
 		}
@@ -133,10 +135,21 @@ public class SecureTransport {
         JSONObject responseObject = new JSONObject();                   
         responseObject.put("responseHeader", responseHeader);
         responseObject.put("responseBody", responseBody);		
+		responseObject.put("responseHttpStatus", httpArray[0]);
 		
 		return responseObject;
 	}
 
+	public void AbortAPI(long instanceID) throws ErrorCodeException {
+
+		int result = abortJNI(instanceID);
+		if (result != 0) {            
+			throw new ErrorCodeException(result);
+		}
+
+		return;        
+	} 
+	
 	public void DestroyAPI(long instanceID) throws ErrorCodeException {
 
 		int result = destroyJNI(instanceID);

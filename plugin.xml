@@ -3,13 +3,14 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"    
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="com.intel.security"
-    version="1.3.0">
-    <name>Intel Security Services plugin</name>
-    <description>Intel Security Services Plugin</description>
+    version="1.4.0">
+    <name>APP Security API</name>
+    <description>App Security API plugin</description>
+	<repo>https://github.com/01org/AppSecurityApi.git</repo>
     <license></license>
     <keywords>Intel,intel.security,intel.security.Services,Security Services</keywords>
 
-    <js-module src="www/services.js" name="Services">
+    <js-module src="www/appSecurityApi.js" name="Services">
         <clobbers target="intel.security" />
     </js-module>
 	
@@ -81,10 +82,9 @@
                 <param name="wp-package" value="com.intel.security"/>
             </feature>
         </config-file>
-		<js-module src="src/windows8/servicesProxy.js" name="SecureProxy">
+		<js-module src="src/windows/servicesProxy.js" name="SecureProxy">
 			<merges target="" />
 		</js-module>
-		<framework src="src/windows8/libs/x86/IntelSecurityServicesWRC.winmd" custom="true"/>
 		<config-file target="package.appxmanifest" parent="/Package/Dependencies">
         </config-file>
 	</platform>
@@ -96,10 +96,11 @@
                 <param name="windows-package" value="com.intel.security"/>
             </feature>
         </config-file>
-		<js-module src="src/windows8/servicesProxy.js" name="SecureProxy">
+		<js-module src="src/windows/servicesProxy.js" name="SecureProxy">
 			<merges target="" />
 		</js-module>
-		<framework src="src/windows8/libs/x86/IntelSecurityServicesWRC.winmd" custom="true" />
+		
+	
     </platform>
 	
 </plugin>

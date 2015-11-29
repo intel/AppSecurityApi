@@ -35,15 +35,24 @@ extern "C" {
 #endif
 
 
+/** @defgroup Globals Globals
+ @{
 #define SSERVICE_VERSION 0x00010000
+*/
+sservice_result_t sservice_global_init_start(void);
+sservice_result_t sservice_global_init_end(void);
+sservice_result_t sservice_global_release(void);
+sservice_result_t sservice_config_set(IN config_id_enum_t ConfigID, IN char const *pData, IN sservice_size_t DataSize ) ;
+/** @} */ 
+
+
+/** @defgroup SecureData SecureData
+ @{
+*/
 /** Function removes object handle from HandleManager table and destroys referenced SecureData object.
 * @param [in] data_handle references object to be destroyed
 * @see sservice_data_handle_t
 * @return sservice_result_t, indicating success/failure error code.
-*/
-
-/** @defgroup SecureData SecureData
- @{
 */
 sservice_result_t sservice_securedata_destroy
 	( 
@@ -318,17 +327,17 @@ sservice_result_t sservice_securetransport_set_method
     IN  sservice_http_method_t method
 	);    
 
-sservice_result_t sservice_securetransport_set_header
+sservice_result_t sservice_securetransport_set_headers
 	(
 	IN  sservice_transport_handle_t handle,
-	IN  const char* key,
-	IN  const char* value
+	IN  const char* headers
 	);
 
 sservice_result_t sservice_securetransport_set_url
 	(
 	IN sservice_transport_handle_t handle,
-    IN  const char* url
+    IN  const char* url,
+	IN  const char* public_key_pinning
 	);
 
 
@@ -338,6 +347,7 @@ sservice_result_t sservice_securetransport_send_request
 	IN  const char* request, // utf-8
 	IN  sservice_secure_transport_content_type_t request_format,
 	IN  const char* desc_str, // utf-8
+	OUT unsigned long* http_status_code,
     OUT  sservice_size_t* response_header_size,
     OUT  sservice_size_t* response_body_size
 	);
@@ -356,9 +366,13 @@ sservice_result_t sservice_securetransport_get_response_body
     IN  sservice_size_t buffer_size,
     OUT char* buffer
     );
-    
 
-sservice_result_t sservice_securetransport_delete
+sservice_result_t sservice_securetransport_abort
+	(
+	IN  sservice_transport_handle_t handle
+	);
+
+sservice_result_t sservice_securetransport_destroy
 	(
 	IN  sservice_transport_handle_t handle
 	);

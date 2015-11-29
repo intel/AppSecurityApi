@@ -70,7 +70,7 @@ typedef unsigned int uint32_t;
 #endif
 #endif
 
-
+typedef char utf8_t ;
 typedef uint32_t sservice_size_t;		/**< defines size of data*/
 typedef unsigned short uint16_t;
 
@@ -190,15 +190,13 @@ typedef enum
 #define MAX_WEB_DOMAINS_LIST_LENGTH (4096)		/**< Maximal Web owners. size - 4kB. */
 #define MAX_OWNERS_COUNT (1)
 #define MAX_BUFFER_SIZE_SECURE_TRANSPORT_ID (64)
-#define MAX_SECURE_TRANSPORT_URL_SIZE (8192)			//8KB
-#define MAX_SECURE_TRANSPORT_HEADER_KEY_SIZE (4096)		//4KB
-#define MAX_SECURE_TRANSPORT_HEADER_VALUE_SIZE (4096)	//4KB
+#define MAX_SECURE_TRANSPORT_URL_SIZE (16384)			//16K
 #define MAX_SECURE_TRANSPORT_TIMEOUT (120000)		    //120 seconds
-#define MAX_SECURE_TRANSPORT_CERTIFICATE_SIZE (8192)	//8KB
-#define MAX_SECURE_TRANSPORT_DATA_SIZE (20971520)		//20MB
-#define MAX_SECURE_TRANSPORT_RESPONSE_DATA_SIZE (20971520)//20MB
+#define MAX_SECURE_TRANSPORT_CERTIFICATE_SIZE (65536)	//64KB
+#define MAX_SECURE_TRANSPORT_DATA_SIZE (83886080)		//80MB
+#define MAX_SECURE_TRANSPORT_RESPONSE_DATA_SIZE (83886080)//80MB
 #define MAX_SECURE_TRANSPORT_DESCRIPTOR_SIZE (8192)		//8KB
-#define MAX_SECURE_TRANSPORT_SUM_HEADERS_SIZE (8192)	//8KB
+#define MAX_SECURE_TRANSPORT_SUM_HEADERS_SIZE (32768)	//32KB
 #define AES128_KEY_SIZE             (16)
 #define AES128_CBC_IV_SIZE          AES128_KEY_SIZE
 #define AES128_GCM_IV_SIZE          (12)
@@ -322,8 +320,7 @@ typedef enum
 	MIN_CONTENT_TYPE=0,
 	GENERIC=0,
 	JSON=1,
-	XML=2,
-	MAX_CONTENT_TYPE=2
+	MAX_CONTENT_TYPE=1
 } sservice_secure_transport_content_type_t;
 
 
@@ -331,6 +328,7 @@ typedef enum
 
 typedef enum
 {
+	INVALID_HTTP_METHOD =-1,
 	MIN_HTTP_METHODS	= 0,
 	HTTP_METHOD_GET		= 0,
 	HTTP_METHOD_POST	= 1,
@@ -342,10 +340,21 @@ typedef enum
 
 }  sservice_http_method_t;
 
+typedef enum
+{
+	MINIMUM_HEADER_TYPE_HEADER=0,
+	HTTP_HEADER=0,
+	SECURE_DATA_HEADER=1,
+	MAXIMUM_HEADER_TYPE_HEADER=1
+}sservice_secure_transport_header_type_t;
+
 typedef struct{
 	char* key;
 	char* value;
+	sservice_secure_transport_header_type_t header_type;
 } sservice_http_header_t;
+
+
 
 typedef enum
 {
@@ -362,6 +371,22 @@ typedef enum
      SSERVICE_OBJTYPE_SECURE_TRANSPORT,
 	 SSERVICE_OBJTYPE_PERSONA
 }sservice_object_type_t;
+
+
+typedef enum {
+	CONFIG_ID_APP_PATH = 0x100,
+	CONFIG_ID_LOCAL_PATH,
+	CONFIG_ID_APP_ID,
+	CONFIG_ID_HARDWARE_ID, 
+	CONFIG_ID_OS_VERSION,
+	CONFIG_ID_WHITELIST_ACCESS_MIN = 0xD000,
+	CONFIG_ID_WHITELIST_ACCESS_MAX = 0xDFFF,
+	CONFIG_ID_WHITELIST_SUBDOMAINS_MIN = 0xE000,
+	CONFIG_ID_WHITELIST_SUBDOMAINS_MAX = 0xEFFF,
+	CONFIG_ID_CACERT_MIN = 0xF000,
+	CONFIG_ID_CACERT_MAX = 0xFF00,
+}config_id_enum_t ;
+
 
 #ifdef _MSC_VER
 #pragma pack( pop)

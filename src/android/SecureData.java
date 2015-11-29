@@ -51,7 +51,7 @@ public class SecureData {
     protected native int destroyJNI(long instanceID);
 
     
-    final protected String dataEncoding = "UTF-16LE";
+    final protected String dataEncoding = "UTF-8";
 
     public long CreateFromDataAPI(String dataStr, String tagStr, long extraKey, int appAccessControl, int deviceLocality,
             int sensitivityLevel, int noStore, int noRead, long creator, JSONArray ownersUIDJSONArray, String trustedWebDomains) 
@@ -109,7 +109,7 @@ public class SecureData {
         // decode data from Base64 to byte[]
         byte[] sealedData=null;
         try {
-            sealedData = Base64.decode(sealedDataBase64Str, Base64.DEFAULT);          
+            sealedData = Base64.decode(sealedDataBase64Str, Base64.NO_WRAP);          
         } catch (IllegalArgumentException e)
         {      
             throw new ErrorCodeException(ErrorCodeEnum.DATA_INTEGRITY_VIOLATION_DETECTED.getValue());
@@ -250,7 +250,7 @@ public class SecureData {
         }
         
         // encode sealed data using Base64
-        String sealedDataBase64 = Base64.encodeToString(buffer, Base64.DEFAULT);        
+        String sealedDataBase64 = Base64.encodeToString(buffer, Base64.NO_WRAP);        
         return sealedDataBase64;
     }
     
@@ -310,11 +310,12 @@ public class SecureData {
     public String GetTrustedWebDomainsAPI(long instanceID) throws ErrorCodeException {
         
         StringBuffer wdString = new StringBuffer ("");
-        int result = getTrustedWebDomainsJNI(instanceID, wdString );
+		int result = getTrustedWebDomainsJNI(instanceID, wdString );
         if (result != 0) {            
             throw new ErrorCodeException(result);
         }
         return wdString.toString() ;
+		
     }
 
     public void DestoryAPI(long instanceID) throws ErrorCodeException {

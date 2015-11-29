@@ -33,7 +33,7 @@ public class SecureStorage {
 	protected native int writeJNI(String id, int storageType, long instanceID);    
     protected native int deleteJNI(String id, int storageType);
    
-    final protected String dataEncoding = "UTF-16LE";
+    final protected String dataEncoding = "UTF-8";
     
     public long ReadAPI(String id, int storageType, long extraKey) throws ErrorCodeException {
 

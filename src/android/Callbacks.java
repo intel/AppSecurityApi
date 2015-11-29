@@ -31,43 +31,7 @@ import java.io.IOException;
 public class Callbacks {
     
     public Callbacks(){} ;
-    public String getAppData(String DataID)
-    {
-		if(DataID==null)
-        {
-            return new String("") ;
-        }
-        Services instance = Services.getInstance() ;
-        if(instance==null)
-        {
-            return new String("") ;
-        }
-        Context mContext=instance.GetSserviceContext() ;
-        if ( DataID.equals("AppName") )
-        {
-            return mContext.getPackageName() ;
-        }
-        if ( DataID.equals("AndroidID"))
-        {
-            return  Settings.Secure.getString(mContext.getContentResolver(),Settings.Secure.ANDROID_ID);
-        }
-        if ( DataID.equals("AndroidVersion"))
-        {
-            return Integer.toString(android.os.Build.VERSION.SDK_INT) ;
-        }
-        return java.util.UUID.randomUUID().toString() ;
-    }
-    public String getInternalPath()
-    {
-        Services instance = Services.getInstance() ;
-        if(instance==null)
-        {
-            return new String("") ;
-        }
-        Context mContext=instance.GetSserviceContext() ;
-        return mContext.getFilesDir().toString();
-    }
-	
+
 	public byte[] getAssetBuffer(String file, int bufferSize)
     {	
         if(file==null)
@@ -114,7 +78,4 @@ public class Callbacks {
 			return 0;            
         }
     }
-
-    
-	
 }

@@ -1,3 +1,19 @@
+1.4.0 (December, 2015)
+    Added support for Windows 10
+    Secure Data createFromData and getWebOwners API webOwners parameter changed to an array of strings 
+    Secure Transport abort API added
+    Secure Transport setHeaders API replaces setHeaderValue API
+	
+	Supported Platforms: Android, iOS, Windows 8/8.1/10
+	
+	The plugin was tested on:
+	- Android Intel and ARM devices
+    - iPhone ARM device
+	- Windows 8 Intel (x86, x64) devices
+    - Windows 8.1  ARM and Intel (x86, x64) devices
+    - Windows 10 Intel (x86, x64) devices
+    
+    
 1.3.0 (July, 2015)
 
 	Added support for Cordova 5.1.1

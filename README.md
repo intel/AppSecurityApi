@@ -9,6 +9,11 @@ For example
 For more information please visit our API documentation @ https://software.intel.com/en-us/app-security-api/api
 Additionally please see our demo application "MyPrivateNotes" https://software.intel.com/en-us/xdk/article/my-private-notes-sample
 
+Known Issues
+=====================
+In SecureData changeExtraKey API the extraKey parameter is called "extraKeyInstanceID".
+Other API's call the extraKey parameter "extraKey".
+
 How to use the plugin
 =====================
 This example is for Android but applicable for iOS and Windows
@@ -62,5 +67,3 @@ Cordova 5.1.1 Windows build flow
         cordova compile windows --release --arch=x86 -- --appx=uap
         cordova compile windows --release --arch=x64 -- --appx=uap
         cordova compile windows --release --arch=ARM -- --appx=uap
-
-

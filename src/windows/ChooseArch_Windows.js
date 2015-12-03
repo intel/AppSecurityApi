@@ -21,32 +21,45 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 ******************************************************************************/
 var fs = require('fs');
 
-fs.mkdirSync("plugins");
-fs.mkdirSync("plugins/com.intel.security/");
-fs.mkdirSync("plugins/com.intel.security/win8");
-fs.mkdirSync("plugins/com.intel.security/win10");
-fs.mkdirSync("plugins/com.intel.security/win8/x86");
-fs.mkdirSync("plugins/com.intel.security/win8/x64");
-fs.mkdirSync("plugins/com.intel.security/win8/arm");
-fs.mkdirSync("plugins/com.intel.security/win10/x86");
-fs.mkdirSync("plugins/com.intel.security/win10/x64");
-fs.mkdirSync("plugins/com.intel.security/win10/arm");
+// check if we already run the script
+fs.access('plugins/com.intel.security/win8/x86/IntelSecurityServicesWRC.dll', fs.F_OK, function (err) {
+  if (err !== null){
+    // file not exist we can run the script
+    try { fs.mkdirSync("plugins"); } catch(e) {}
+    try { fs.mkdirSync("plugins/com.intel.security/"); } catch(e) {}
+    try { fs.mkdirSync("plugins/com.intel.security/win8"); } catch(e) {}
+    try { fs.mkdirSync("plugins/com.intel.security/win10"); } catch(e) {}
+    try { fs.mkdirSync("plugins/com.intel.security/win8/x86"); } catch(e) {}
+    try { fs.mkdirSync("plugins/com.intel.security/win8/x64"); } catch(e) {}
+    try { fs.mkdirSync("plugins/com.intel.security/win8/arm"); } catch(e) {}
+    try { fs.mkdirSync("plugins/com.intel.security/win10/x86"); } catch(e) {}
+    try { fs.mkdirSync("plugins/com.intel.security/win10/x64"); } catch(e) {}
+    try { fs.mkdirSync("plugins/com.intel.security/win10/arm"); } catch(e) {}
+    
+    copyFilesIntoProject();
+    var solutionFile2012 = 'CordovaApp.vs2012.sln';
+    var solutionFile2015 = 'CordovaApp.sln';
+    var projectFile80 = 'CordovaApp.Windows80.jsproj';
+    var projectFile10 = 'CordovaApp.Windows10.jsproj';
+    var projectFile81 = 'CordovaApp.Windows.jsproj';
 
-copyFilesIntoProject();
+    defineArchSLN(solutionFile2012);
+    defineArchSLN(solutionFile2015);
+    fixProjectFile8(projectFile80);
+    fixProjectFile81(projectFile81);
+    fixProjectFile10(projectFile10);
 
-var solutionFile2012 = 'CordovaApp.vs2012.sln';
-var solutionFile2015 = 'CordovaApp.sln';
-var projectFile80 = 'CordovaApp.Windows80.jsproj';
-var projectFile10 = 'CordovaApp.Windows10.jsproj';
-var projectFile81 = 'CordovaApp.Windows.jsproj';
+    console.log("Fixed!");
+    
+  } else {
+    // file exist we should not run the script
+    console.log("Skip!");
+  }
+  
+});
 
-defineArchSLN(solutionFile2012);
-defineArchSLN(solutionFile2015);
-fixProjectFile8(projectFile80);
-fixProjectFile81(projectFile81);
-fixProjectFile10(projectFile10);
 
-console.log("Fixed!");
+
 
 function copyFilesIntoProject() {
     // copy dll & winmd & files

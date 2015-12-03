@@ -13,6 +13,9 @@
     - Windows 8.1  ARM and Intel (x86, x64) devices
     - Windows 10 Intel (x86, x64) devices
     
+	Known issues: 
+	*In SecureData changeExtraKey API the extraKey parameter is called "extraKeyInstanceID".
+	Other API's call the extraKey parameter "extraKey".
     
 1.3.0 (July, 2015)
 

@@ -280,7 +280,7 @@ var _secureData = {
         options = options || {};
         var defaults = {
             instanceID: 0,
-            extraKeyInstanceID: 0
+            extraKey: 0
         };
         for (var key in defaults) {
             if (options[key] !== undefined) {
@@ -288,7 +288,7 @@ var _secureData = {
             }
         }
         if (!isValidNonNegativeSafeInteger(defaults.instanceID) ||
-            !isValidNonNegativeSafeInteger(defaults.extraKeyInstanceID)) {
+            !isValidNonNegativeSafeInteger(defaults.extraKey)) {
             failInternal('Argument type inconsistency detected', fail);
         } else {
             cordova.exec(
@@ -297,7 +297,7 @@ var _secureData = {
                     failInternal(code, fail);
                 },
                 'IntelSecurity',
-                'SecureDataChangeExtraKey', [defaults.instanceID, defaults.extraKeyInstanceID]);
+                'SecureDataChangeExtraKey', [defaults.instanceID, defaults.extraKey]);
         }
     },
     getData: function(success, fail, instanceID) {

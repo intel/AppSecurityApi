@@ -9,16 +9,12 @@ For example
 For more information please visit our API documentation @ https://software.intel.com/en-us/app-security-api/api
 Additionally please see our demo application "MyPrivateNotes" https://software.intel.com/en-us/xdk/article/my-private-notes-sample
 
-Known Issues
-=====================
-In SecureData changeExtraKey API the extraKey parameter is called "extraKeyInstanceID".
-Other API's call the extraKey parameter "extraKey".
 
 How to use the plugin
 =====================
 This example is for Android but applicable for iOS and Windows
 	1. Create a new Cordova project
-		Cordova create AppDir com.intel.security AppDir
+		cordova create AppDir com.intel.security AppDir
 
 	2. Navigate to the Cordova project directory
 		cd AppDir
@@ -36,8 +32,8 @@ This example is for Android but applicable for iOS and Windows
 		cordova plugin
 
     7. Build the project
-		(Optional) for windows build instructions please see below
-		Cordova build 
+		(Optional) for Windows build instructions please see below
+		cordova build 
 
 	8. (Optional) Run the project
 		cordova emulate	(SDK emulator)
@@ -45,6 +41,7 @@ This example is for Android but applicable for iOS and Windows
 		cordova run (connected device)
 
 Cordova 5.1.1 Windows build flow
+================================
     To overcome some gaps/issues with native library build in Windows we
 	provide a workaround script (ChooseArch_Windows.js) that you should use before
 	step 7 (build the project).
@@ -53,17 +50,27 @@ Cordova 5.1.1 Windows build flow
 	Run the following command in a shell:
 		node.exe ChooseArch_Windows.js 
 	
+	It is recommended to upgrade the Cordova windows tools, please run "cordova platform update windows@4.2.0"
+	
     To build the Windows project per architecture please use the following commands:	
     Windows 8:
-	Assuming MSBuild is at "c:\Windows\Microsoft.NET\Framework\v4.0.30319\"
-        c:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild CordovaApp.Windows80.jsproj /p:Platform=x86 /p:Configuration=Release /t:rebuild  
-        c:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild CordovaApp.Windows80.jsproj /p:Platform=x64 /p:Configuration=Release /t:rebuild 
-        c:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild CordovaApp.Windows80.jsproj /p:Platform=ARM /p:Configuration=Release /t:rebuild 
+		Assuming MSBuild is at "c:\Windows\Microsoft.NET\Framework\v4.0.30319\"
+		for x86 --> c:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild CordovaApp.Windows80.jsproj /p:Platform=x86 /t:rebuild /p:Configuration=Release
+		for x64 --> c:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild CordovaApp.Windows80.jsproj /p:Platform=x64 /t:rebuild /p:Configuration=Release
+		for ARM --> c:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild CordovaApp.Windows80.jsproj /p:Platform=ARM /t:rebuild /p:Configuration=Release
+		
     Windows 8.1:
-        cordova compile windows --release --arch=x86 -- --win
-        cordova compile windows --release --arch=x64 -- --win
-        cordova compile windows --release --arch=ARM -- --win
+        for x86 --> cordova prepare windows --release --arch=x86 -- --win
+					cordova compile windows --release --arch=x86 -- --win
+		for x64 --> cordova prepare windows --release --arch=x64 -- --win
+					cordova compile windows --release --arch=x64 -- --win
+		for ARM --> cordova prepare windows --release --arch=ARM -- --win
+					cordova compile windows --release --arch=ARM -- --win
+
     Windows 10:
-        cordova compile windows --release --arch=x86 -- --appx=uap
-        cordova compile windows --release --arch=x64 -- --appx=uap
-        cordova compile windows --release --arch=ARM -- --appx=uap
+        for x86 --> cordova prepare windows --release --arch=x86 -- --appx=uap
+					cordova compile windows --release --arch=x86 -- --appx=uap
+		for x64 --> cordova prepare windows --release --arch=x64 -- --appx=uap
+					cordova compile windows --release --arch=x64 -- --appx=uap
+		for ARM --> cordova prepare windows --release --arch=ARM -- --appx=uap
+					cordova compile windows --release --arch=ARM -- --appx=uap

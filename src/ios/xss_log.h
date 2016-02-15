@@ -1,7 +1,6 @@
 #ifndef SSERVICE_LOGGER_H
 #define SSERVICE_LOGGER_H
 
-#ifndef NDEBUG
 	
 /******************************************************************************
 "Copyright (c) 2015-2015, Intel Corporation
@@ -59,6 +58,6 @@ typedef enum
 	LOG_SOURCE_RUNTIME = LOG_SOURCE_RUNTIME_VAL,
 } sservice_log_source_t ;
 
-#endif
+
 
 #endif

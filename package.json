@@ -1,0 +1,41 @@
+{
+  "name": "com.intel.security",
+  "version": "1.4.1",
+  "description": "App Security API plugin",
+  "cordova": {
+    "id": "com.intel.security",
+    "platforms": [
+      "android",
+      "ios",
+      "windows8",
+      "windows"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/01org/AppSecurityApi.git"
+  },
+  "keywords": [
+    "Intel",
+    "intel.security",
+    "intel.security.Services",
+    "Security Services",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios",
+    "cordova-windows8",
+    "cordova-windows",
+	"Intel XDK",
+	"encryption",
+	"cryptography",
+	"app",
+	"security",
+	"api"
+  ],
+  "author": "Dan Shmul (Intel Corporation)",
+  "license": "SEE LICENSE IN LICENSE",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/01org/AppSecurityApi/issues"
+  }
+}

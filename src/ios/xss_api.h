@@ -376,13 +376,9 @@ sservice_result_t sservice_securetransport_destroy
 	(
 	IN  sservice_transport_handle_t handle
 	);
-
-/** @} */ 
-#ifndef NDEBUG
-    void sservice_debug_unit_test() ;
 	void sservice_log(  sservice_log_source_t log_source, sservice_log_level_t log_level, char const *format_str, ... ) ;
 
-#endif
+/** @} */ 
     
 #ifdef __cplusplus
 }

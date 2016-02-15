@@ -1490,35 +1490,6 @@ static inline void DoNothing(char const * formatStr, ... )
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void) unitTest:(CDVInvokedUrlCommand *)command
-{
-	//Check input parameter. Probably not necessary
-    if( ![self checkArguments:command argNumber:1])
-	{
-		XSSLOG_BRIDGE(LOG_ERROR, "Exiting from %s, error 0x%x", __FUNCTION__, SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code ) ;
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt: SSERVICE_ERROR_INTERNAL_ERROR.error_or_warn_code];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        return ;
-	}
-    [self.commandDelegate runInBackground:^{
-        sservice_result_t res = SSERVICE_SUCCESS_NOINFO ;
-        
-        sservice_debug_unit_test() ;
-        CDVPluginResult *pluginResult = NULL ;
-        if( IS_FAILED(res) )
-        {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                             messageAsString:[NSString stringWithFormat:@"%d", res.error_or_warn_code]];
-        }
-        else
-        {
-            pluginResult = [ CDVPluginResult resultWithStatus: CDVCommandStatus_OK ];
-        }
-        // Execute sendPluginResult on this plugin's commandDelegate, passing in the ...
-        // ... instance of CDVPluginResult
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    }];
-}
 #endif
 @end
 

@@ -19,37 +19,38 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING N
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 "
 ******************************************************************************/
-var fs = require('fs');
 
+var fs = require('fs');
+var PLUGINS_DIR_IN_WINDOWS_PLATFORM='platforms/windows/plugins/com.intel.security';
 // check if we already run the script
-fs.access('plugins/com.intel.security/win8/x86/IntelSecurityServicesWRC.dll', fs.F_OK, function (err) {
+fs.access(PLUGINS_DIR_IN_WINDOWS_PLATFORM+'/win8/x86/IntelSecurityServicesWRC.dll', fs.F_OK, function (err) {
   if (err !== null){
-    // file not exist we can run the script
-    try { fs.mkdirSync("plugins"); } catch(e) {}
-    try { fs.mkdirSync("plugins/com.intel.security/"); } catch(e) {}
-    try { fs.mkdirSync("plugins/com.intel.security/win8"); } catch(e) {}
-    try { fs.mkdirSync("plugins/com.intel.security/win10"); } catch(e) {}
-    try { fs.mkdirSync("plugins/com.intel.security/win8/x86"); } catch(e) {}
-    try { fs.mkdirSync("plugins/com.intel.security/win8/x64"); } catch(e) {}
-    try { fs.mkdirSync("plugins/com.intel.security/win8/arm"); } catch(e) {}
-    try { fs.mkdirSync("plugins/com.intel.security/win10/x86"); } catch(e) {}
-    try { fs.mkdirSync("plugins/com.intel.security/win10/x64"); } catch(e) {}
-    try { fs.mkdirSync("plugins/com.intel.security/win10/arm"); } catch(e) {}
+	// file not exist we can run the script
+    try { fs.mkdirSync("platforms/windows/plugins"); } catch(e) {}
+    try { fs.mkdirSync(PLUGINS_DIR_IN_WINDOWS_PLATFORM); } catch(e) {}
+    try { fs.mkdirSync(PLUGINS_DIR_IN_WINDOWS_PLATFORM+"/win8"); } catch(e) {}
+    try { fs.mkdirSync(PLUGINS_DIR_IN_WINDOWS_PLATFORM+"/win10"); } catch(e) {}
+    try { fs.mkdirSync(PLUGINS_DIR_IN_WINDOWS_PLATFORM+"/win8/x86"); } catch(e) {}
+    try { fs.mkdirSync(PLUGINS_DIR_IN_WINDOWS_PLATFORM+"/win8/x64"); } catch(e) {}
+    try { fs.mkdirSync(PLUGINS_DIR_IN_WINDOWS_PLATFORM+"/win8/arm"); } catch(e) {}
+    try { fs.mkdirSync(PLUGINS_DIR_IN_WINDOWS_PLATFORM+"/win10/x86"); } catch(e) {}
+    try { fs.mkdirSync(PLUGINS_DIR_IN_WINDOWS_PLATFORM+"/win10/x64"); } catch(e) {}
+    try { fs.mkdirSync(PLUGINS_DIR_IN_WINDOWS_PLATFORM+"/win10/arm"); } catch(e) {}
     
     copyFilesIntoProject();
-    var solutionFile2012 = 'CordovaApp.vs2012.sln';
-    var solutionFile2015 = 'CordovaApp.sln';
-    var projectFile80 = 'CordovaApp.Windows80.jsproj';
-    var projectFile10 = 'CordovaApp.Windows10.jsproj';
-    var projectFile81 = 'CordovaApp.Windows.jsproj';
+    var solutionFile2012 = 'platforms/windows/CordovaApp.vs2012.sln';
+    var solutionFile2015 = 'platforms/windows/CordovaApp.sln';
+    var projectFile80 = 'platforms/windows/CordovaApp.Windows80.jsproj';
+    var projectFile10 = 'platforms/windows/CordovaApp.Windows10.jsproj';
+    var projectFile81 = 'platforms/windows/CordovaApp.Windows.jsproj';
 
     defineArchSLN(solutionFile2012);
     defineArchSLN(solutionFile2015);
     fixProjectFile8(projectFile80);
     fixProjectFile81(projectFile81);
     fixProjectFile10(projectFile10);
-
-    console.log("Fixed!");
+    
+	console.log("Fixed!");
     
   } else {
     // file exist we should not run the script
@@ -68,8 +69,8 @@ function copyFilesIntoProject() {
     var archNames = ['x86', 'x64', 'arm'];
     for (var k = 0; k < winNames.length; k++) {
         for (var j = 0; j < archNames.length; j++) {
-            var srcPath = '../../plugins/com.intel.security/src/windows/' + winNames[k] + '/' + archNames[j] + '/';
-            var dstPath = 'plugins/com.intel.security/' + winNames[k] + '/' + archNames[j] + '/';
+			var srcPath = 'plugins/com.intel.security/src/windows/'+winNames[k] + '/' + archNames[j] + '/';
+			var dstPath = PLUGINS_DIR_IN_WINDOWS_PLATFORM +'/'+ winNames[k] + '/' + archNames[j] + '/';
             var dllFilesName = ['IntelSecurityServicesWRC.dll', 'IntelSecurityServicesWRC.winmd'];
 
             for (var i = 0; i < dllFilesName.length; i++) {

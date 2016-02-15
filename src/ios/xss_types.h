@@ -40,7 +40,9 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 #endif 
 #define ALIGN1 ALIGN(1)
 
+#ifndef UINT64_MAX
 typedef unsigned long long uint64_t ;
+#endif
 typedef uint64_t sservice_handle_t ;   /**< used to reference the object*/
 
 #ifndef _UINT32_T

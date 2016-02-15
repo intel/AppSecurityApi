@@ -3,7 +3,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"    
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="com.intel.security"
-    version="1.4.0">
+    version="1.4.1">
     <name>APP Security API</name>
     <description>App Security API plugin</description>
 	<repo>https://github.com/01org/AppSecurityApi.git</repo>
@@ -39,6 +39,8 @@
 	<source-file src="src/android/armeabi" 	target-dir="libs" />
 	<source-file src="src/android/armeabi-v7a" target-dir="libs" />
 	<source-file src="src/android/x86" 		target-dir="libs" />
+	<source-file src="src/android/x86_64" 		target-dir="libs" />
+	<source-file src="src/android/arm64-v8a" 	target-dir="libs" />
 
     </platform>
 
@@ -99,7 +101,7 @@
 		<js-module src="src/windows/servicesProxy.js" name="SecureProxy">
 			<merges target="" />
 		</js-module>
-		
+		<hook type="after_prepare" src="src/windows/ChooseArch_Windows.js"/>
 	
     </platform>
 	

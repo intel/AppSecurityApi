@@ -36,11 +36,11 @@
         <source-file src="src/android/x86/sr_agent.vp" target-dir="assets" />	
 	<source-file src="src/android/x86/libSecurityServices.sb" target-dir="assets" />	
 		
-	<source-file src="src/android/armeabi" 	target-dir="libs" />
-	<source-file src="src/android/armeabi-v7a" target-dir="libs" />
-	<source-file src="src/android/x86" 		target-dir="libs" />
-	<source-file src="src/android/x86_64" 		target-dir="libs" />
-	<source-file src="src/android/arm64-v8a" 	target-dir="libs" />
+	<source-file src="src/android/arm64-v8a/libSecurityServices.so" target-dir="libs/arm64-v8a"/>
+        <source-file src="src/android/armeabi/libSecurityServices.so" target-dir="libs/armeabi"/>
+        <source-file src="src/android/armeabi-v7a/libSecurityServices.so" target-dir="libs/armeabi-v7a"/>
+        <source-file src="src/android/x86/libSecurityServices.so" target-dir="libs/x86"/>
+        <source-file src="src/android/x86_64/libSecurityServices.so" target-dir="libs/x86_64"/>
 
     </platform>
 

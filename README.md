@@ -1,5 +1,6 @@
 App Security API
 ================ 
+This GitHub repository is deprecated. 
 
 For using the new versions of App Security API as a Cordova plugin, please go to : https://github.com/AppSecurityApi/com-intel-security-cordova-plugin
 
